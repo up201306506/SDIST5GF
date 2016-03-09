@@ -10,34 +10,28 @@ import java.util.Queue;
 
 public abstract class M_Socket {
 	
+	
 	InetAddress multicastAddress;
 	static byte[] bufferData;
 	int port;
-	
 	Queue<String> messageQueue;
-	
 	MulticastSocket multicastSocket;
 	DatagramSocket datagramSocket;
-	
 	DatagramPacket packet;
-	
 	Thread multicastReceiveThread;
 	
+	
+	//Methods
 	public M_Socket(String address, int p, int bufLength) throws IOException{
 		
 		multicastAddress = InetAddress.getByName(address);
 		bufferData = new byte[bufLength];
 		port = p;
-		
 		messageQueue = new LinkedList<String>();
-		
 		multicastSocket = new MulticastSocket(port);
 		multicastSocket.joinGroup(multicastAddress);
-		
 		datagramSocket = new DatagramSocket();
-		
 		packet = new DatagramPacket(bufferData, bufferData.length);
-		
 		multicastReceiveThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -55,7 +49,14 @@ public abstract class M_Socket {
 		multicastReceiveThread.start();
 	}
 	
-	public abstract Boolean send();
+	public Boolean send(String message) throws IOException {
+		
+		DatagramPacket temppacket = new DatagramPacket(message.getBytes(), message.getBytes().length,
+				multicastAddress, port);		
+		datagramSocket.send(temppacket);
+		
+		return true;
+	}
 	
 	public String receive() {
 		String tmp = messageQueue.peek();
