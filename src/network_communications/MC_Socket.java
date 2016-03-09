@@ -1,6 +1,7 @@
 package network_communications;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 
 public class MC_Socket extends M_Socket{
 	
@@ -10,9 +11,5 @@ public class MC_Socket extends M_Socket{
 		super(address, p, BUFFER_LENGTH);
 	}
 
-	@Override
-	public Boolean send() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+
 }
