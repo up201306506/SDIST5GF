@@ -3,7 +3,7 @@ package Test;
 import java.io.IOException;
 
 import file_management.FileManager;
-import network_communications.MC_Socket;
+import network_communications.M_Socket;
 
 public class Test_NetCom_Receive {
 
@@ -17,7 +17,7 @@ public class Test_NetCom_Receive {
 		String address = "224.225.226.227";
 		String port = "12345";
 		
-		MC_Socket p1 = new MC_Socket(address, Integer.parseInt(port));
+		M_Socket p1 = new M_Socket(address, Integer.parseInt(port));
 		
 		int cycles = 0;
 		while(cycles < 120){ 
