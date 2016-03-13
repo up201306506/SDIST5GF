@@ -5,7 +5,7 @@ import java.io.IOException;
 import file_utils.ProtocolEnum;
 import network_communications.M_Socket;
 
-public class Test_NetCom_Receive {
+public class Test_NetCom_QueueSize {
 
 	public static void main(String[] args) throws InterruptedException, NumberFormatException, IOException {
 		
@@ -21,26 +21,12 @@ public class Test_NetCom_Receive {
 		
 		int cycles = 0;
 		while(cycles < 120){ 
-						
-			/*
-			Boolean receivedFlag = false;
 			
-			if (p1.queueSize(-1) > 0)
-			{
-				System.out.println("Got a message on Default Queue: " + p1.receive(-1));
-				receivedFlag = true;
-			}
-			for (int i = ProtocolEnum.min; i <= ProtocolEnum.max; i++)
-			{
-				if (p1.queueSize(i) > 0)
-				{
-					System.out.println("Got a message on " + i + " Queue: " + p1.receive(i));
-					receivedFlag = true;
-				}
-			}		
-			if(receivedFlag)
-				System.out.println("Nada");
-			*/
+			System.out.println("Default Queue Size: " + p1.queueSize(-1));
+			System.out.println("BACKUP Queue Size: " + p1.queueSize(1));
+			System.out.println("STORED Queue Size: " + p1.queueSize(2));
+			
+			Thread.sleep(2500);
 			
 			Thread.sleep(500);
 			

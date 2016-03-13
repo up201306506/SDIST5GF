@@ -24,7 +24,7 @@ public class Test_NetCom_Send {
 		while(true)
 		{
 			System.out.println("Enter a message to send: ('q' to quit)");
-			String m = reader.next();
+			String m = reader.nextLine();
 			
 			if(m.equals("q"))
 			{

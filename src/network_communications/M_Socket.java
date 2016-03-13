@@ -35,6 +35,7 @@ public class M_Socket {
 			port = p;
 			
 			messageQueue = new HashMap<>();
+			messageQueue.put(ProtocolEnum.UNKNOWN, new LinkedList<String>());
 			messageQueue.put(ProtocolEnum.BACKUP, new LinkedList<String>());
 			messageQueue.put(ProtocolEnum.STORED, new LinkedList<String>());
 			
@@ -53,16 +54,24 @@ public class M_Socket {
 					try {
 						multicastSocket.receive(packet);
 						String tmp = new String(packet.getData(), 0, packet.getLength());
-						
 						int blankSpaceIndex = tmp.indexOf(" ");
-						switch (tmp.substring(0, blankSpaceIndex)) {
-						case "PUTCHUNK":
-							messageQueue.get(ProtocolEnum.BACKUP).add(tmp);
-							break;
-						case "STORED":
-							messageQueue.get(ProtocolEnum.STORED).add(tmp);
-							break;
+						if(blankSpaceIndex != -1)
+						{
+							switch (tmp.substring(0, blankSpaceIndex)) {
+								case "PUTCHUNK":
+									messageQueue.get(ProtocolEnum.BACKUP).add(tmp);
+									break;
+								case "STORED":
+									messageQueue.get(ProtocolEnum.STORED).add(tmp);
+									break;
+								default:
+									messageQueue.get(ProtocolEnum.UNKNOWN).add(tmp);
+									break;
+							}
 						}
+						else
+							messageQueue.get(ProtocolEnum.UNKNOWN).add(tmp);
+						
 					} catch (IOException e) {
 						e.printStackTrace();
 					} 
@@ -99,5 +108,13 @@ public class M_Socket {
 		}
 		
 		return tmp;
+	};
+	
+	public int  queueSize(int protocolEnum) {
+		if (protocolEnum >= ProtocolEnum.min && protocolEnum <= ProtocolEnum.max) 
+			return messageQueue.get(protocolEnum).size();
+		else
+			return messageQueue.get(ProtocolEnum.UNKNOWN).size();
+		
 	};
 }
