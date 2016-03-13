@@ -105,6 +105,10 @@ public class M_Socket {
 			tmp = messageQueue.get(ProtocolEnum.STORED).peek();
 			if(tmp != null) messageQueue.get(ProtocolEnum.STORED).remove();
 			break;
+		default:
+			tmp = messageQueue.get(ProtocolEnum.UNKNOWN).peek();
+			if(tmp != null) messageQueue.get(ProtocolEnum.UNKNOWN).remove();
+			break;
 		}
 		
 		return tmp;

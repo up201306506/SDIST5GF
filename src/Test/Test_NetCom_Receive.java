@@ -22,27 +22,29 @@ public class Test_NetCom_Receive {
 		int cycles = 0;
 		while(cycles < 120){ 
 						
-			/*
+			
 			Boolean receivedFlag = false;
 			
-			if (p1.queueSize(-1) > 0)
+			
+			String tmp = p1.receive(-1);
+			if (tmp != null)
 			{
-				System.out.println("Got a message on Default Queue: " + p1.receive(-1));
+				System.out.println("Got a message on Default Queue: " + tmp);
 				receivedFlag = true;
 			}
 			for (int i = ProtocolEnum.min; i <= ProtocolEnum.max; i++)
 			{
-				if (p1.queueSize(i) > 0)
+				tmp = p1.receive(i);
+				if (tmp != null)
 				{
-					System.out.println("Got a message on " + i + " Queue: " + p1.receive(i));
+					System.out.println("Got a message on Queue " + i + " : " + tmp);
 					receivedFlag = true;
 				}
 			}		
-			if(receivedFlag)
+			if(!receivedFlag)
 				System.out.println("Nada");
-			*/
 			
-			Thread.sleep(500);
+			Thread.sleep(500); //2 minutos
 			
 		}
 		return;
