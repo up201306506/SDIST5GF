@@ -5,8 +5,12 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
+
+import file_utils.ProtocolEnum;
 
 public class M_Socket {
 	
@@ -20,17 +24,20 @@ public class M_Socket {
 	private DatagramSocket datagramSocket;
 	private DatagramPacket packet;
 	
-	private Queue<String> messageQueue;
+	private Map<Integer, Queue<String>> messageQueue;
 	
 	private Thread multicastReceiveThread;
 	
-	//Methods
 	public M_Socket(String address, int p) {
 		try{
 			multicastAddress = InetAddress.getByName(address);
 			bufferData = new byte[_BUFFER_LENGTH];
 			port = p;
-			messageQueue = new LinkedList<String>();
+			
+			messageQueue = new HashMap<>();
+			messageQueue.put(ProtocolEnum.BACKUP, new LinkedList<String>());
+			messageQueue.put(ProtocolEnum.STORED, new LinkedList<String>());
+			
 			multicastSocket = new MulticastSocket(port);
 			multicastSocket.joinGroup(multicastAddress);
 			datagramSocket = new DatagramSocket();
@@ -46,7 +53,16 @@ public class M_Socket {
 					try {
 						multicastSocket.receive(packet);
 						String tmp = new String(packet.getData(), 0, packet.getLength());
-						messageQueue.add(tmp);
+						
+						int blankSpaceIndex = tmp.indexOf(" ");
+						switch (tmp.substring(0, blankSpaceIndex)) {
+						case "PUTCHUNK":
+							messageQueue.get(ProtocolEnum.BACKUP).add(tmp);
+							break;
+						case "STORED":
+							messageQueue.get(ProtocolEnum.STORED).add(tmp);
+							break;
+						}
 					} catch (IOException e) {
 						e.printStackTrace();
 					} 
@@ -69,11 +85,18 @@ public class M_Socket {
 		return true;
 	}
 	
-	public String receive() {
-		
-		String tmp = messageQueue.peek();
-		
-		if(tmp != null) messageQueue.remove();
+	public String receive(int protocolEnum) {
+		String tmp = null;
+		switch (protocolEnum) {
+		case ProtocolEnum.BACKUP:
+			tmp = messageQueue.get(ProtocolEnum.BACKUP).peek();
+			if(tmp != null) messageQueue.get(ProtocolEnum.BACKUP).remove();
+			break;
+		case ProtocolEnum.STORED:
+			tmp = messageQueue.get(ProtocolEnum.STORED).peek();
+			if(tmp != null) messageQueue.get(ProtocolEnum.STORED).remove();
+			break;
+		}
 		
 		return tmp;
 	};

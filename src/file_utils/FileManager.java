@@ -1,4 +1,4 @@
-package file_management;
+package file_utils;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,7 +16,7 @@ public class FileManager {
 
 	private static String _POSTBOX = "PostBox";
 	private static String _STORAGE = "_storage_folder_SYS_";
-
+	
 	private static int _CHUNK_SIZE = 64000;
 
 	public FileManager(){
@@ -30,13 +30,22 @@ public class FileManager {
 			dirStorageFolder.mkdir();
 		}
 	}
+	
+	public String storeFolder(String fileId){
+		File chunkFolder = new File(_STORAGE + "/" + fileId);
+		if(!chunkFolder.exists()){
+			chunkFolder.mkdir();
+		}
+		
+		return (_STORAGE + "/" + fileId + "/");
+	}
 
-	public boolean splitFile(String fileName){
-		String pathToFile = _POSTBOX + "/" + fileName;
-		String outputDir = _STORAGE + "/";
-
-		File fileToSplit = new File(pathToFile);
-		if(!fileToSplit.exists() || !fileToSplit.isFile()) return false;
+	public ArrayList<byte[]> splitFile(String filePath){
+		
+		ArrayList<byte[]> result = new ArrayList<>();
+		
+		File fileToSplit = new File(filePath);
+		if(!fileToSplit.exists() || !fileToSplit.isFile()) return null;
 
 		byte[] buffer = new byte[_CHUNK_SIZE];
 
@@ -48,21 +57,14 @@ public class FileManager {
 
 			long numberOfChuncks = fileToSplit.length() / _CHUNK_SIZE;
 			for(int i = 0; i < numberOfChuncks; i++){
-
-				int bytesRead = bis.read(buffer);
-
-				File chunck = new File(outputDir + fileName + "-" + (i + 1));
-				FileOutputStream outputFile = new FileOutputStream(chunck);
-				outputFile.write(buffer, 0, bytesRead);
-				outputFile.close();
+				bis.read(buffer);
+				result.add(buffer);
 			}
 			
 			int bytesRead = bis.read(buffer);
-
-			File chunck = new File(outputDir + fileName + "-" + (numberOfChuncks + 1));
-			FileOutputStream outputFile = new FileOutputStream(chunck);
-			outputFile.write(buffer, 0, bytesRead);
-			outputFile.close();
+			byte[] smallBuffer = new byte[bytesRead];
+			System.arraycopy(buffer, 0, smallBuffer, 0, bytesRead);
+			result.add(smallBuffer);
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -70,7 +72,7 @@ public class FileManager {
 			e.printStackTrace();
 		}
 
-		return true;
+		return result;
 	}
 	
 	public boolean uniteFile(String fileName){
