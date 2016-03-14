@@ -21,10 +21,14 @@ public class Test_NetCom_QueueSize {
 		
 		int cycles = 0;
 		while(cycles < 120){ 
-			
+			System.out.println("----------------------------------------");
 			System.out.println("Default Queue Size: " + p1.queueSize(-1));
-			System.out.println("BACKUP Queue Size: " + p1.queueSize(1));
+			System.out.println("PUTCHUNK Queue Size: " + p1.queueSize(1));
 			System.out.println("STORED Queue Size: " + p1.queueSize(2));
+			System.out.println("GETCHUNK Queue Size: " + p1.queueSize(3));
+			System.out.println("CHUNK Queue Size: " + p1.queueSize(4));
+			System.out.println("DELETE Queue Size: " + p1.queueSize(5));
+			System.out.println("REMOVED Queue Size: " + p1.queueSize(6));
 			
 			Thread.sleep(2500);
 			

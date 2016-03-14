@@ -34,10 +34,10 @@ public class M_Socket {
 			bufferData = new byte[_BUFFER_LENGTH];
 			port = p;
 			
-			messageQueue = new HashMap<>();
+			messageQueue = new HashMap<>();			
 			messageQueue.put(ProtocolEnum.UNKNOWN, new LinkedList<String>());
-			messageQueue.put(ProtocolEnum.BACKUP, new LinkedList<String>());
-			messageQueue.put(ProtocolEnum.STORED, new LinkedList<String>());
+			for(int i = ProtocolEnum.min; i <= ProtocolEnum.max; i++)
+				messageQueue.put(i, new LinkedList<String>());
 			
 			multicastSocket = new MulticastSocket(port);
 			multicastSocket.joinGroup(multicastAddress);
@@ -63,6 +63,18 @@ public class M_Socket {
 									break;
 								case "STORED":
 									messageQueue.get(ProtocolEnum.STORED).add(tmp);
+									break;
+								case "GETCHUNK":
+									messageQueue.get(ProtocolEnum.GETCHUNK).add(tmp);
+									break;
+								case "CHUNK":
+									messageQueue.get(ProtocolEnum.CHUNK).add(tmp);
+									break;
+								case "DELETE":
+									messageQueue.get(ProtocolEnum.DELETE).add(tmp);
+									break;
+								case "REMOVED":
+									messageQueue.get(ProtocolEnum.REMOVED).add(tmp);
 									break;
 								default:
 									messageQueue.get(ProtocolEnum.UNKNOWN).add(tmp);
@@ -95,22 +107,18 @@ public class M_Socket {
 	}
 	
 	public String receive(int protocolEnum) {
-		String tmp = null;
-		switch (protocolEnum) {
-		case ProtocolEnum.BACKUP:
-			tmp = messageQueue.get(ProtocolEnum.BACKUP).peek();
-			if(tmp != null) messageQueue.get(ProtocolEnum.BACKUP).remove();
-			break;
-		case ProtocolEnum.STORED:
-			tmp = messageQueue.get(ProtocolEnum.STORED).peek();
-			if(tmp != null) messageQueue.get(ProtocolEnum.STORED).remove();
-			break;
-		default:
+		String tmp = null;	
+		if(protocolEnum >= ProtocolEnum.min && protocolEnum >= ProtocolEnum.max)
+		{
+			tmp = messageQueue.get(protocolEnum).peek();
+			if(tmp != null) messageQueue.get(protocolEnum).remove();		
+		}
+		else
+		{
 			tmp = messageQueue.get(ProtocolEnum.UNKNOWN).peek();
 			if(tmp != null) messageQueue.get(ProtocolEnum.UNKNOWN).remove();
-			break;
 		}
-		
+
 		return tmp;
 	};
 	
