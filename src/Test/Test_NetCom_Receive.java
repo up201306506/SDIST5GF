@@ -2,8 +2,8 @@ package Test;
 
 import java.io.IOException;
 
-import file_management.FileManager;
-import network_communications.MC_Socket;
+import file_utils.ProtocolEnum;
+import network_communications.M_Socket;
 
 public class Test_NetCom_Receive {
 
@@ -14,15 +14,38 @@ public class Test_NetCom_Receive {
 				Recebe e faz display de mensagens no canal de comunicação.
 		*/
 		
-		String address = "224.225.226.227";
-		String port = "12345";
+		String address = "224.225.226.228";
+		String port = "12346";
 		
-		MC_Socket p1 = new MC_Socket(address, Integer.parseInt(port));
+		M_Socket p1 = new M_Socket(address, Integer.parseInt(port));
 		
 		int cycles = 0;
 		while(cycles < 120){ 
-			System.out.println(p1.receive());
-			Thread.sleep(500); // 1 minuto
+						
+			
+			Boolean receivedFlag = false;
+			
+			
+			String tmp = p1.receive(-1);
+			if (tmp != null)
+			{
+				System.out.println("Got a message on Default Queue: " + tmp);
+				receivedFlag = true;
+			}
+			for (int i = ProtocolEnum.min; i <= ProtocolEnum.max; i++)
+			{
+				tmp = p1.receive(i);
+				if (tmp != null)
+				{
+					System.out.println("Got a message on Queue " + i + " : " + tmp);
+					receivedFlag = true;
+				}
+			}		
+			if(!receivedFlag)
+				System.out.println("Nada");
+			
+			Thread.sleep(500); //2 minutos
+			
 		}
 		return;
 	}
