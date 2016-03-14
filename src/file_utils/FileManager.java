@@ -92,16 +92,13 @@ public class FileManager {
 		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		PriorityQueue<String> namesOrdered = new PriorityQueue<>(chunckNameHolder);
-		while(!namesOrdered.isEmpty()){
-			byte[] holderBuffer;
-			try {
-				holderBuffer = Files.readAllBytes(Paths.get(filesDir + "/" + namesOrdered.remove()));
-				output.write(holderBuffer);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 		try{
+			while(!namesOrdered.isEmpty()){
+				byte[] holderBuffer;
+				holderBuffer = Files.readAllBytes(Paths.get(filesDir + "/" + fileName + "/" + namesOrdered.remove()));
+				output.write(holderBuffer);
+			}
+			
 			FileOutputStream outFile = new FileOutputStream(outputDir);
 			outFile.write(output.toByteArray());
 			outFile.close();

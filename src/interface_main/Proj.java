@@ -6,7 +6,6 @@ import java.util.Map;
 import file_utils.ChunkKey;
 import file_utils.FileManager;
 import network_communications.M_Socket;
-import protocol_communications.Backup_Protocol;
 
 public class Proj {
 	
@@ -19,9 +18,6 @@ public class Proj {
 		M_Socket mc = new M_Socket("224.225.226.227", 12345);
 		M_Socket mdb = new M_Socket("224.225.226.228", 12346);
 		
-		Backup_Protocol bp = new Backup_Protocol(fm, chunkStored, mc, mdb);
-		
-		bp.backupFile("PostBox/test.jpg", "2.5", 5);
-		//bp.receiveChunk();
+		fm.uniteFile("328af81c5767b162c3a373e346f60a390a9baa9c4c67c4a348c22beab14ca3d");
 	}
 }

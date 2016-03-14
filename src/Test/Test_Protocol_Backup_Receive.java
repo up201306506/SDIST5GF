@@ -35,8 +35,8 @@ public class Test_Protocol_Backup_Receive {
 				e.printStackTrace();
 			}
 			
-			System.out.println("Queue Sizes: ");
-			System.out.println("MC:" + mc.queueSize(-1) + " MDB:" + mdb.queueSize(-1));
+			//System.out.println("Queue Sizes: ");
+			//System.out.println("MC:" + mc.queueSize(-1) + " MDB:" + mdb.queueSize(-1));
 			System.out.println("MC:" + mc.queueSize(1) + " MDB:" + mdb.queueSize(1));
 			System.out.println("MC:" + mc.queueSize(2) + " MDB:" + mdb.queueSize(2));
 		}

@@ -44,6 +44,8 @@ public class Backup_Protocol extends Protocol {
 		int waitInterval = _INITIAL_REPLY_WAIT_TIME;
 		
 		boolean backupComplete = false;
+		
+		final HashSet<String> storedSenderIds = new HashSet<>();
 
 		while(numOfTries <= _MAX_NUMBER_OF_RETRIES && !backupComplete){
 			
@@ -56,11 +58,13 @@ public class Backup_Protocol extends Protocol {
 					
 					@Override
 					public void run() {
-						HashSet<String> storedSenderIds = new HashSet<>();
 						
 						while(true){
 							String data = mc.receive(ProtocolEnum.STORED);
 							if(data != null){
+								
+								System.out.println("stored");
+								
 								// STORED Part
 								int blankSpaceIndex = data.indexOf(" ");
 								String holder = data.substring(0, blankSpaceIndex);
@@ -94,6 +98,7 @@ public class Backup_Protocol extends Protocol {
 								holder = data.substring(0, 2);
 								
 								storedSenderIds.add(storedPeerId);
+								System.out.println(storedSenderIds.size());
 								if(storedSenderIds.size() == replicationDegree) return;
 							}
 						}
@@ -112,6 +117,8 @@ public class Backup_Protocol extends Protocol {
 				waitInterval = waitInterval * 2;
 			}
 			executor.shutdown();
+			
+			if(storedSenderIds.size() == replicationDegree) backupComplete = true;
 		}
 
 		chunkStored.put(new ChunkKey(fileId, chunkNum), replicationDegree);
@@ -150,6 +157,8 @@ public class Backup_Protocol extends Protocol {
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
+		
+		System.out.println("backed up file");
 
 		return true;
 	}
@@ -209,7 +218,7 @@ public class Backup_Protocol extends Protocol {
 		blankSpaceIndex = data.indexOf(" ");
 		String chunkNum = data.substring(0, blankSpaceIndex);
 
-		//System.out.println("Chunk Num: " + chunkNum);
+		System.out.println("Chunk Num: " + chunkNum);
 
 		// Replication Degree Part
 		data = data.substring(blankSpaceIndex + 1);

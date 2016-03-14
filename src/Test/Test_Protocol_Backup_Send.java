@@ -23,7 +23,7 @@ public class Test_Protocol_Backup_Send {
 		
 		
 		
-		bp.backupFile("PostBox/test.jpg", "2.5", 1);
+		bp.backupFile("PostBox/test.PNG", "2.5", 1);
 
 		
 	}
