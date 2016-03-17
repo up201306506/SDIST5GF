@@ -22,78 +22,63 @@ public class Restore_Protocol extends Protocol {
 	private static int _MAX_NUMBER_OF_RETRIES = 5;
 	private static int _INITIAL_REPLY_WAIT_TIME = 1; // seconds
 	
-	
+	private Thread getChunkResponseThread;
+	private Boolean getChunkResponseActive = false;
 	
 	public Restore_Protocol(FileManager fm, Map<ChunkKey, Integer> cs, M_Socket mc, M_Socket mdr) {
 		super(fm, cs, mc);
 		this.mdr = mdr;
+				
 	}
 	
-	//Requesting Chunk Request  [X] --> Chunk ---> [ ]
+	//Requesting Chunk Request  [X] --> GetChunk ---> [ ]
+	//							[X] <--   Chunk  <--- [ ]
 	public Boolean sendGetChunkRequest(String version, String senderId, String fileId, int chunkNum){
 		int numOfTries = 1;
 		int waitInterval = _INITIAL_REPLY_WAIT_TIME;
 		
 		final boolean getchunkComplete = false;
-		
-		
-		while(numOfTries <= _MAX_NUMBER_OF_RETRIES && !getchunkComplete){
 			
-			mc.send(_HEAD + " " + version + " " + senderId + " " + fileId + " " + chunkNum + " " + _CRLF + _CRLF);
-			
-/*
-			ExecutorService executor = Executors.newSingleThreadExecutor();
-			try {
-				executor.submit(new Runnable() {
-					
-					@Override
-					public void run() {
-						
-						while(true){
-							String data = mc.receive(ProtocolEnum.STORED);
-							if(data != null){
-								
-								System.out.println("stored");
-								
-								// CHUNK  Part
-								int blankSpaceIndex = data.indexOf(" ");
-								String holder = data.substring(0, blankSpaceIndex);								
-								if(holder.equals(_REPLY_HEAD))
-								{
-									//getchunkComplete = true;
-									return;
-								}
-							}
-						}
+		
+		return false;
+	}
+	
+	
+	
+	//Receiving Chunk Request   [ ] --> GetChunk ---> [X]
+	//							[ ] <--   Chunk  <--- [X]
+	public boolean startGetChunkResponse(){
+		
+		if(!getChunkResponseActive)
+		{
+			getChunkResponseThread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					while (getChunkResponseActive) {
+						System.out.println("I LIVE!");
 					}
-				}).get(waitInterval, TimeUnit.SECONDS);
+					
+					System.out.println("I DIE!");
+				}
+			});
+			getChunkResponseThread.start();
+			getChunkResponseActive = true;
+			return true;
+		}
 
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} catch (ExecutionException e) {
-				e.printStackTrace();
-			} catch (TimeoutException e) {
-				System.out.println("TIMEOUT");
-				numOfTries++;
-				waitInterval = waitInterval * 2;
-			}
-			executor.shutdown();
-*/	
+		return false;
+	}
+	
+	public boolean stopGetChunkResponse(){
+		if(getChunkResponseActive)
+		{
+			getChunkResponseActive = false;
+			try {
+				getChunkResponseThread.join();
+			} catch (InterruptedException e) {e.printStackTrace();}
 			
 		}
 		
-		
-		
-		
-		
 		return false;
 	}
-	
-	
-	
-	//Receiving Chunk Request    [ ] --> Chunk ---> [X]
-	public Boolean receiveGetChunkRequest(){
-		return false;
-	}
-	
 }

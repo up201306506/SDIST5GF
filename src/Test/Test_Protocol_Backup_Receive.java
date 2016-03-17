@@ -29,16 +29,16 @@ public class Test_Protocol_Backup_Receive {
 			bp.receiveChunk();			
 			
 			try {
-				Thread.sleep(100);
+				Thread.sleep(500);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
-			//System.out.println("Queue Sizes: ");
-			//System.out.println("MC:" + mc.queueSize(-1) + " MDB:" + mdb.queueSize(-1));
-			//System.out.println("MC:" + mc.queueSize(1) + " MDB:" + mdb.queueSize(1));
-			System.out.println("MC:" + mc.queueSize(2) + " MDB:" + mdb.queueSize(2));
+			System.out.println("Queue Sizes: ");
+			System.out.println("MC:" + mc.queueSize(-1) + " MDB:" + mdb.queueSize(-1) + "//Non-Protocol");
+			System.out.println("MC:" + mc.queueSize(1) + " MDB:" + mdb.queueSize(1) + "//PUTCHUNK");
+			System.out.println("MC:" + mc.queueSize(2) + " MDB:" + mdb.queueSize(2) + "//STORED");
 		}
 		
 	}

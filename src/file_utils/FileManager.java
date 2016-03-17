@@ -65,13 +65,16 @@ public class FileManager {
 			byte[] smallBuffer = new byte[bytesRead];
 			System.arraycopy(buffer, 0, smallBuffer, 0, bytesRead);
 			result.add(smallBuffer);
+			
+			bis.close();
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
+		
+	
 		return result;
 	}
 	
@@ -95,7 +98,7 @@ public class FileManager {
 		try{
 			while(!namesOrdered.isEmpty()){
 				byte[] holderBuffer;
-				holderBuffer = Files.readAllBytes(Paths.get(filesDir + "/" + fileName + "/" + namesOrdered.remove()));
+				holderBuffer = Files.readAllBytes(Paths.get(filesDir + File.separator + fileName + File.separator + namesOrdered.remove()));
 				output.write(holderBuffer);
 			}
 			
