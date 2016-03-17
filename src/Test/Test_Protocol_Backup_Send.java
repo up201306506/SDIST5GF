@@ -16,15 +16,11 @@ public class Test_Protocol_Backup_Send {
 		
 		Map<ChunkKey, Integer> chunkStored = new HashMap<>();
 		
-		M_Socket mc = new M_Socket("224.225.226.230", 12345);
-		M_Socket mdb = new M_Socket("224.225.226.231", 12346);
+		M_Socket mc = new M_Socket("224.224.224.224", 15000);
+		M_Socket mdb = new M_Socket("224.224.224.225", 15001);
 		
 		Backup_Protocol bp = new Backup_Protocol(fm, chunkStored, mc, mdb);
 		
-		
-		
 		bp.backupFile("PostBox/test.PNG", "2.5", 1);
-
-		
 	}
 }
