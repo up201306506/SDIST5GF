@@ -47,7 +47,7 @@ public class Backup_Protocol extends Protocol {
 		
 		final HashSet<String> storedSenderIds = new HashSet<>();
 
-		while(numOfTries <= _MAX_NUMBER_OF_RETRIES && !backupComplete){
+		while(( numOfTries <= _MAX_NUMBER_OF_RETRIES ) && !backupComplete){
 			
 			mdb.send(_HEAD + " " + version + " " + senderId + " " + fileId + " " + chunkNum + " " + replicationDegree +
 					" " + _CRLF + _CRLF + chunkData);
@@ -59,49 +59,48 @@ public class Backup_Protocol extends Protocol {
 					@Override
 					public void run() {
 						
-						while(true){
-							String data = mc.receive(ProtocolEnum.STORED);
-							if(data != null){
-								
-								System.out.println("stored");
-								
-								// STORED Part
-								int blankSpaceIndex = data.indexOf(" ");
-								String holder = data.substring(0, blankSpaceIndex);
-								//if(!holder.equals(_REPLY_HEAD)) return;
+						String data;
+						
+						do{
+							data = mc.receive(ProtocolEnum.STORED);
+						}while(data == null);
+						
+						//System.out.println("stored");
+						
+						// STORED Part
+						int blankSpaceIndex = data.indexOf(" ");
+						String holder = data.substring(0, blankSpaceIndex);
+						//if(!holder.equals(_REPLY_HEAD)) return;
 
-								// Version Part
-								data = data.substring(blankSpaceIndex + 1);
-								blankSpaceIndex = data.indexOf(" ");
-								String versionStored = data.substring(0, blankSpaceIndex);
-								//if(!versionStored.equals(versionSent)) return;
+						// Version Part
+						data = data.substring(blankSpaceIndex + 1);
+						blankSpaceIndex = data.indexOf(" ");
+						String versionStored = data.substring(0, blankSpaceIndex);
+						//if(!versionStored.equals(versionSent)) return;
 
-								// SenderId Part
-								data = data.substring(blankSpaceIndex + 1);
-								blankSpaceIndex = data.indexOf(" ");
-								String storedPeerId = data.substring(0, blankSpaceIndex);
-								
-								// FileId Part
-								data = data.substring(blankSpaceIndex + 1);
-								blankSpaceIndex = data.indexOf(" ");
-								String fileIdStored = data.substring(0, blankSpaceIndex);
-								//if(!fileIdStored.equals(fileIdSent)) return;
-								
-								// ChunkNum Part
-								data = data.substring(blankSpaceIndex + 1);
-								blankSpaceIndex = data.indexOf(" ");
-								int chunkNumStored = Integer.parseInt(data.substring(0, blankSpaceIndex));
-								//if(chunkNumStored != chunkNumSent) return;
-								
-								// CRLF Part
-								data = data.substring(blankSpaceIndex + 1);
-								holder = data.substring(0, 2);
-								
-								storedSenderIds.add(storedPeerId);
-								System.out.println(storedSenderIds.size());
-								if(storedSenderIds.size() == replicationDegree) return;
-							}
-						}
+						// SenderId Part
+						data = data.substring(blankSpaceIndex + 1);
+						blankSpaceIndex = data.indexOf(" ");
+						String storedPeerId = data.substring(0, blankSpaceIndex);
+						
+						// FileId Part
+						data = data.substring(blankSpaceIndex + 1);
+						blankSpaceIndex = data.indexOf(" ");
+						String fileIdStored = data.substring(0, blankSpaceIndex);
+						//if(!fileIdStored.equals(fileIdSent)) return;
+						
+						// ChunkNum Part
+						data = data.substring(blankSpaceIndex + 1);
+						blankSpaceIndex = data.indexOf(" ");
+						int chunkNumStored = Integer.parseInt(data.substring(0, blankSpaceIndex));
+						//if(chunkNumStored != chunkNumSent) return;
+						
+						// CRLF Part
+						data = data.substring(blankSpaceIndex + 1);
+						holder = data.substring(0, 2);
+						
+						storedSenderIds.add(storedPeerId);
+						return;
 					}
 				}).get(waitInterval, TimeUnit.SECONDS);
 
@@ -110,6 +109,7 @@ public class Backup_Protocol extends Protocol {
 			} catch (ExecutionException e) {
 				System.err.println("Receiving Socket may not have the receiving queue initialized for this protocol");
 				e.printStackTrace();
+				e.getCause();
 			} catch (TimeoutException e) {
 				System.out.println("TIMEOUT");
 				
@@ -121,7 +121,7 @@ public class Backup_Protocol extends Protocol {
 			if(storedSenderIds.size() == replicationDegree) backupComplete = true;
 		}
 
-		chunkStored.put(new ChunkKey(fileId, chunkNum), replicationDegree);
+		if(backupComplete) chunkStored.put(new ChunkKey(fileId, chunkNum), replicationDegree);
 
 		return backupComplete;
 	}
@@ -149,6 +149,7 @@ public class Backup_Protocol extends Protocol {
 			String fileId = hexString.toString();
 
 			for(int i = 0; i < data.size(); i++){
+				System.out.println("Chunk: " + i);
 				if(!sendPutChunck(version, senderId, fileId, i, replicationDegree, new String(data.get(i)))) return false;
 			}
 
