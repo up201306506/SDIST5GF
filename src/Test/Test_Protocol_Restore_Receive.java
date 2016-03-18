@@ -22,16 +22,16 @@ public class Test_Protocol_Restore_Receive {
 		
 		Restore_Protocol rp = new Restore_Protocol(fm, chunkStored, mc, mdr);
 		
+		System.out.println("Teste do receptor de GETCHUNK e que devolve CHUNK");
+		
 		rp.startGetChunkResponse();
 		
 		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			Thread.sleep(35000);
+		} catch (InterruptedException e) {e.printStackTrace();}
 		
 		rp.stopGetChunkResponse();
 		
+		return;
 	}
 }

@@ -14,8 +14,8 @@ public class Test_NetCom_QueueSize {
 				Recebe e faz display de mensagens no canal de comunicação.
 		*/
 		
-		String address = "224.225.226.228";
-		String port = "12346";
+		String address = "224.225.226.230";
+		String port = "12345";
 		
 		M_Socket p1 = new M_Socket(address, Integer.parseInt(port));
 		

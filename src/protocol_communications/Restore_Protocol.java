@@ -23,7 +23,7 @@ public class Restore_Protocol extends Protocol {
 	private static int _INITIAL_REPLY_WAIT_TIME = 1; // seconds
 	
 	private Thread getChunkResponseThread;
-	private Boolean getChunkResponseActive = false;
+	private volatile Boolean getChunkResponseActive = false;
 	
 	public Restore_Protocol(FileManager fm, Map<ChunkKey, Integer> cs, M_Socket mc, M_Socket mdr) {
 		super(fm, cs, mc);
@@ -55,7 +55,7 @@ public class Restore_Protocol extends Protocol {
 				@Override
 				public void run() {
 					while (getChunkResponseActive) {
-						System.out.println("I LIVE!");
+						getChunkResponseLogic();
 					}
 					
 					System.out.println("I DIE!");
@@ -80,5 +80,22 @@ public class Restore_Protocol extends Protocol {
 		}
 		
 		return false;
+	}
+	
+	public boolean getChunkResponseLogic(){
+		
+		if(mc.queueSize(ProtocolEnum.GETCHUNK) > 0)
+			System.out.println("Fila");
+		
+		String msg = mc.receive(ProtocolEnum.GETCHUNK);
+		
+		if(msg == null)
+			return false;
+		
+		System.out.println("Recebi GETCHUNK");
+		mdr.send("CHUNK Olá");
+		
+		
+		return true;
 	}
 }

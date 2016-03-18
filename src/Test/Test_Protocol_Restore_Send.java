@@ -23,6 +23,6 @@ public class Test_Protocol_Restore_Send {
 		Restore_Protocol rp = new Restore_Protocol(fm, chunkStored, mc, mdr);
 		
 		
-		
+		return;
 	}
 }

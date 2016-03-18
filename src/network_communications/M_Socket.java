@@ -108,7 +108,7 @@ public class M_Socket {
 	
 	public String receive(int protocolEnum) {
 		String tmp = null;	
-		if(protocolEnum >= ProtocolEnum.min && protocolEnum >= ProtocolEnum.max)
+		if(protocolEnum >= ProtocolEnum.min && protocolEnum <= ProtocolEnum.max)
 		{
 			tmp = messageQueue.get(protocolEnum).peek();
 			if(tmp != null) messageQueue.get(protocolEnum).remove();		
