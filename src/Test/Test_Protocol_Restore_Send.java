@@ -20,7 +20,7 @@ public class Test_Protocol_Restore_Send {
 		Restore_Protocol rp = new Restore_Protocol(fm, chunkStored, mc, mdr);
 		
 		System.out.println("Teste do emissor de GETCHUNK e que espera CHUNK");
-		rp.sendGetChunkRequest("1.0", "testsender", "testfile", 0);
+		rp.sendGetChunkRequest("1.0", "testfile", 15);
 		
 		System.out.println("End");
 		
