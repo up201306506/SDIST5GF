@@ -14,14 +14,15 @@ public class Test_Protocol_Restore_Send {
 	public static void main(String[] args) {
 		
 		FileManager fm = new FileManager();
-		
 		Map<ChunkKey, Integer> chunkStored = new HashMap<>();
-		
 		M_Socket mc = new M_Socket("224.225.226.230", 12345);
 		M_Socket mdr = new M_Socket("224.225.226.232", 12346);
-		
 		Restore_Protocol rp = new Restore_Protocol(fm, chunkStored, mc, mdr);
 		
+		System.out.println("Teste do emissor de GETCHUNK e que espera CHUNK");
+		rp.sendGetChunkRequest("1.0", "testsender", "testfile", 0);
+		
+		System.out.println("End");
 		
 		return;
 	}

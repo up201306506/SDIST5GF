@@ -32,6 +32,8 @@ public class Test_Protocol_Restore_Receive {
 		
 		rp.stopGetChunkResponse();
 		
+		System.out.println("End");
+		
 		return;
 	}
 }

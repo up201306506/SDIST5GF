@@ -16,7 +16,7 @@ import network_communications.M_Socket;
 
 public class Restore_Protocol extends Protocol {
 
-	private static String _HEAD = "GETCHUNK";
+	private static String _HEAD = "GETCHUNK ";
 	private static String _REPLY_HEAD = "CHUNK";
 
 	private static int _MAX_NUMBER_OF_RETRIES = 5;
@@ -38,6 +38,13 @@ public class Restore_Protocol extends Protocol {
 		int waitInterval = _INITIAL_REPLY_WAIT_TIME;
 		
 		final boolean getchunkComplete = false;
+		
+		String msg = _HEAD + version + " " + senderId + " " + fileId + " " + chunkNum;
+		mc.send(msg);
+		
+		
+		//
+		System.out.println("sent GETCHUNK");
 			
 		
 		return false;
@@ -57,8 +64,6 @@ public class Restore_Protocol extends Protocol {
 					while (getChunkResponseActive) {
 						getChunkResponseLogic();
 					}
-					
-					System.out.println("I DIE!");
 				}
 			});
 			getChunkResponseThread.start();
@@ -83,17 +88,14 @@ public class Restore_Protocol extends Protocol {
 	}
 	
 	public boolean getChunkResponseLogic(){
-		
-		if(mc.queueSize(ProtocolEnum.GETCHUNK) > 0)
-			System.out.println("Fila");
-		
+			
 		String msg = mc.receive(ProtocolEnum.GETCHUNK);
 		
 		if(msg == null)
 			return false;
 		
 		System.out.println("Recebi GETCHUNK");
-		mdr.send("CHUNK Olá");
+		mdr.send("CHUNK test test test");
 		
 		
 		return true;
