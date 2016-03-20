@@ -1,6 +1,8 @@
 package protocol_communications;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -33,14 +35,33 @@ public class Restore_Protocol extends Protocol {
 	
 	//Requesting Chunk Request  [X] --> GetChunk ---> [ ]
 	//							[X] <--   Chunk  <--- [ ]
-	public Boolean sendGetChunkRequest(String version, String senderId, String fileId, int chunkNum){
+	public Boolean sendGetChunkRequest(String version, String fileId, int chunkNum){
 		int numOfTries = 1;
 		int waitInterval = _INITIAL_REPLY_WAIT_TIME;
 		
-		final boolean getchunkComplete = false;
-			
 		
-		return false;
+		final boolean getchunkComplete = false;
+		String senderId = "senderIdError";
+		try {senderId = InetAddress.getLocalHost().getHostName();} 
+			catch (UnknownHostException e) {e.printStackTrace();}
+		
+		
+		//Enviar a mensagem pelo MC
+		String msg = _HEAD + " " + version + " " + senderId + " " + fileId + " " + chunkNum;
+		mc.send(msg);
+		
+		//DEBUG
+		System.out.println(msg);
+		
+		//Esperar pela resposta pelo MDR
+		//
+		
+		//Guardar o Chunk
+		//
+		
+		
+		
+		return true;
 	}
 	
 	
@@ -57,8 +78,6 @@ public class Restore_Protocol extends Protocol {
 					while (getChunkResponseActive) {
 						getChunkResponseLogic();
 					}
-					
-					System.out.println("I DIE!");
 				}
 			});
 			getChunkResponseThread.start();
@@ -81,19 +100,44 @@ public class Restore_Protocol extends Protocol {
 		
 		return false;
 	}
-	
 	public boolean getChunkResponseLogic(){
-		
-		if(mc.queueSize(ProtocolEnum.GETCHUNK) > 0)
-			System.out.println("Fila");
-		
+			
 		String msg = mc.receive(ProtocolEnum.GETCHUNK);
-		
 		if(msg == null)
 			return false;
 		
+		//DEBUG
 		System.out.println("Recebi GETCHUNK");
-		mdr.send("CHUNK Olá");
+		System.out.println(msg);
+		
+		//Analisar a mensagem
+		String[] msgvars = msg.split("\\s+");
+		if (!msgvars[0].equals(_HEAD))
+			return false;
+		
+		
+		//Se a mensagem recebida pertencer ao próprio, descartar a mensagem.
+		String senderId = "FIXME!";
+		try {
+			senderId = InetAddress.getLocalHost().getHostName();
+			if (senderId.matches(msgvars[2]))
+			{
+				System.out.println("A mensagem recebida veio do próprio.");
+				return false;
+			}
+		} catch (UnknownHostException e) {e.printStackTrace();}
+		
+		
+		
+		//Procurar o chunk e mandar de volta por mdr
+		//Verificar se o ficheiro existe
+		double version = Double.parseDouble(msgvars[1]);
+		String fileId = msgvars[3];
+		int chunkNum = Integer.parseInt(msgvars[4]);
+		
+		
+		String data = "FIXME!!!";
+		mdr.send(_REPLY_HEAD + " " + version + " " + senderId + " " + fileId + " " + version + " " + version + " " + version + " " + _CRLF + _CRLF + data);
 		
 		
 		return true;

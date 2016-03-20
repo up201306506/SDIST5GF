@@ -14,23 +14,18 @@ public class Test_Protocol_Restore_Receive {
 	public static void main(String[] args) {
 		
 		FileManager fm = new FileManager();
-		
 		Map<ChunkKey, Integer> chunkStored = new HashMap<>();
-		
 		M_Socket mc = new M_Socket("224.225.226.230", 12345);
 		M_Socket mdr = new M_Socket("224.225.226.232", 12346);
-		
 		Restore_Protocol rp = new Restore_Protocol(fm, chunkStored, mc, mdr);
 		
 		System.out.println("Teste do receptor de GETCHUNK e que devolve CHUNK");
-		
 		rp.startGetChunkResponse();
-		
-		try {
-			Thread.sleep(35000);
-		} catch (InterruptedException e) {e.printStackTrace();}
-		
+		try {Thread.sleep(15000);} 
+			catch (InterruptedException e) {e.printStackTrace();}
 		rp.stopGetChunkResponse();
+		
+		System.out.println("End");
 		
 		return;
 	}
