@@ -54,7 +54,6 @@ public class Backup_Protocol extends Protocol {
 				}while(data == null);
 				
 				//String holder;
-
 				// STORED Part
 				int blankSpaceIndex = data.indexOf(" ");
 				//holder = data.substring(0, blankSpaceIndex);
