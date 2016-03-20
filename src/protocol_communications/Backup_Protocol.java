@@ -1,9 +1,6 @@
 package protocol_communications;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
@@ -40,83 +37,79 @@ public class Backup_Protocol extends Protocol {
 	private boolean sendPutChunck(String version, String senderId, String fileId, int chunkNum, final int replicationDegree, String chunkData) {
 		if(chunkData == null) return false;
 
-		int numOfTries = 1;
-		int waitInterval = _INITIAL_REPLY_WAIT_TIME;
-		
-		boolean backupComplete = false;
-		
 		final HashSet<String> storedSenderIds = new HashSet<>();
 
+		int numOfTries = 1;
+		int waitInterval = _INITIAL_REPLY_WAIT_TIME;
+		boolean backupComplete = false;
+
+		ExecutorService receiveExecutor = Executors.newFixedThreadPool(1);
+		Runnable receiveRunnable = new Runnable() {
+			@Override
+			public void run() {
+
+				String data = null;
+				do{
+					data = mc.receive(ProtocolEnum.STORED);
+				}while(data == null);
+				
+				//String holder;
+
+				// STORED Part
+				int blankSpaceIndex = data.indexOf(" ");
+				//holder = data.substring(0, blankSpaceIndex);
+				//if(!holder.equals(_REPLY_HEAD)) return;
+
+				// Version Part
+				data = data.substring(blankSpaceIndex + 1);
+				blankSpaceIndex = data.indexOf(" ");
+				//String versionStored = data.substring(0, blankSpaceIndex);
+				//if(!versionStored.equals(versionSent)) return;
+
+				// SenderId Part
+				data = data.substring(blankSpaceIndex + 1);
+				blankSpaceIndex = data.indexOf(" ");
+				String storedPeerId = data.substring(0, blankSpaceIndex);
+
+				// FileId Part
+				data = data.substring(blankSpaceIndex + 1);
+				blankSpaceIndex = data.indexOf(" ");
+				//String fileIdStored = data.substring(0, blankSpaceIndex);
+				//if(!fileIdStored.equals(fileIdSent)) return;
+
+				// ChunkNum Part
+				data = data.substring(blankSpaceIndex + 1);
+				blankSpaceIndex = data.indexOf(" ");
+				//int chunkNumStored = Integer.parseInt(data.substring(0, blankSpaceIndex));
+				//if(chunkNumStored != chunkNumSent) return;
+
+				// CRLF Part
+				data = data.substring(blankSpaceIndex + 1);
+				//holder = data.substring(0, 2);
+
+				storedSenderIds.add(storedPeerId);
+				return;
+			}
+		};
+		
 		while(( numOfTries <= _MAX_NUMBER_OF_RETRIES ) && !backupComplete){
 			
 			mdb.send(_HEAD + " " + version + " " + senderId + " " + fileId + " " + chunkNum + " " + replicationDegree +
 					" " + _CRLF + _CRLF + chunkData);
-
-			ExecutorService executor = Executors.newSingleThreadExecutor();
+			
 			try {
-				executor.submit(new Runnable() {
-					
-					@Override
-					public void run() {
-						
-						String data;
-						
-						do{
-							data = mc.receive(ProtocolEnum.STORED);
-						}while(data == null);
-						
-						//System.out.println("stored");
-						
-						// STORED Part
-						int blankSpaceIndex = data.indexOf(" ");
-						String holder = data.substring(0, blankSpaceIndex);
-						//if(!holder.equals(_REPLY_HEAD)) return;
-
-						// Version Part
-						data = data.substring(blankSpaceIndex + 1);
-						blankSpaceIndex = data.indexOf(" ");
-						String versionStored = data.substring(0, blankSpaceIndex);
-						//if(!versionStored.equals(versionSent)) return;
-
-						// SenderId Part
-						data = data.substring(blankSpaceIndex + 1);
-						blankSpaceIndex = data.indexOf(" ");
-						String storedPeerId = data.substring(0, blankSpaceIndex);
-						
-						// FileId Part
-						data = data.substring(blankSpaceIndex + 1);
-						blankSpaceIndex = data.indexOf(" ");
-						String fileIdStored = data.substring(0, blankSpaceIndex);
-						//if(!fileIdStored.equals(fileIdSent)) return;
-						
-						// ChunkNum Part
-						data = data.substring(blankSpaceIndex + 1);
-						blankSpaceIndex = data.indexOf(" ");
-						int chunkNumStored = Integer.parseInt(data.substring(0, blankSpaceIndex));
-						//if(chunkNumStored != chunkNumSent) return;
-						
-						// CRLF Part
-						data = data.substring(blankSpaceIndex + 1);
-						holder = data.substring(0, 2);
-						
-						storedSenderIds.add(storedPeerId);
-						return;
-					}
-				}).get(waitInterval, TimeUnit.SECONDS);
-
+				receiveExecutor.submit(receiveRunnable).get(waitInterval, TimeUnit.SECONDS);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			} catch (ExecutionException e) {
-				System.err.println("Receiving Socket may not have the receiving queue initialized for this protocol");
 				e.printStackTrace();
 				e.getCause();
 			} catch (TimeoutException e) {
 				System.out.println("TIMEOUT");
-				
+
 				numOfTries++;
 				waitInterval = waitInterval * 2;
 			}
-			executor.shutdown();
 			
 			if(storedSenderIds.size() == replicationDegree) backupComplete = true;
 		}
@@ -149,7 +142,7 @@ public class Backup_Protocol extends Protocol {
 			String fileId = hexString.toString();
 
 			for(int i = 0; i < data.size(); i++){
-				System.out.println("Chunk: " + i);
+				System.out.println("Chunk: " + i + "\tSize: " + data.get(i).length);
 				if(!sendPutChunck(version, senderId, fileId, i, replicationDegree, new String(data.get(i)))) return false;
 			}
 
@@ -158,8 +151,8 @@ public class Backup_Protocol extends Protocol {
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
-		
-		System.out.println("backed up file");
+
+		System.out.println("Backed up file");
 
 		return true;
 	}
@@ -180,78 +173,67 @@ public class Backup_Protocol extends Protocol {
 
 	public boolean receiveChunk(){
 		String data = mdb.receive(ProtocolEnum.BACKUP);
-
 		if(data == null) return false;
 
 		int blankSpaceIndex;
 		String holder;
+		
+		System.out.println("---- CHUNK ----");
 
 		// PUTCHUNK Part
 		blankSpaceIndex = data.indexOf(" ");
 		holder = data.substring(0, blankSpaceIndex);
 		if(!holder.equals(_HEAD)) return false;
+		//System.out.println("Head: " + holder);
 
 		// Version Part
 		data = data.substring(blankSpaceIndex + 1);
 		blankSpaceIndex = data.indexOf(" ");
 		String version = data.substring(0, blankSpaceIndex);
-
 		//System.out.println("Version: " + version);
 
 		// SenderId Part
 		data = data.substring(blankSpaceIndex + 1);
 		blankSpaceIndex = data.indexOf(" ");
-		
-		//String senderId = data.substring(0, blankSpaceIndex);
-		//System.out.println("SenderId: " + senderId);
+		//String senderIdReceived = data.substring(0, blankSpaceIndex);
+		//System.out.println("Sender Id: " + senderIdReceived);
 
 		// FileId Part
 		data = data.substring(blankSpaceIndex + 1);
 		blankSpaceIndex = data.indexOf(" ");
 		String fileId = data.substring(0, blankSpaceIndex);
-
-		String fileChunkFolderPath = fm.storeFolder(fileId);
-
-		//System.out.println("FileId: " + fileId);
+		//System.out.println("File Id: " + fileId);
 
 		// ChunkNum Part
 		data = data.substring(blankSpaceIndex + 1);
 		blankSpaceIndex = data.indexOf(" ");
 		String chunkNum = data.substring(0, blankSpaceIndex);
-
-		System.out.println("Chunk Num: " + chunkNum);
+		//System.out.println("Chunk Num: " + chunkNum);
 
 		// Replication Degree Part
 		data = data.substring(blankSpaceIndex + 1);
 		blankSpaceIndex = data.indexOf(" ");
-		
 		//String replicationDegree = data.substring(0, blankSpaceIndex);
 		//System.out.println("Replication Degree: " + replicationDegree);
 
 		// CRLF Part
 		data = data.substring(blankSpaceIndex + 1);
-		holder = data.substring(0, 2);
+		holder = data.substring(0, 4);
+		//System.out.println("2x CRLF: " + holder);
 
 		// Chunk Data Part
-		data = data.substring(2);
+		data = data.substring(4);
 		byte[] chunkData = data.getBytes();
-
-		String chunkFileName = fileChunkFolderPath + fileId + "-" + chunkNum;
-		File chunkFile = new File(chunkFileName);
-		FileOutputStream fos;
-		try {
-			fos = new FileOutputStream(chunkFile);
-			fos.write(chunkData);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 		
+		System.out.println("Chunk: " + chunkNum + "\tSize: " + chunkData.length);
+		System.out.println("---------------");
+		
+		fm.writeInStoreFolderFile(fileId, chunkNum, chunkData);
+
 		String senderId;
 		try {
 			senderId = InetAddress.getLocalHost().getHostName();
-			
+
 			if(!sendStoredChunck(version, senderId, fileId, chunkNum)) return false;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();

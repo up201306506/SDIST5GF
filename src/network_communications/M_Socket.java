@@ -8,7 +8,6 @@ import java.net.MulticastSocket;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 
 import file_utils.ProtocolEnum;
 
@@ -24,7 +23,7 @@ public class M_Socket {
 	private DatagramSocket datagramSocket;
 	private DatagramPacket packet;
 	
-	private Map<Integer, Queue<String>> messageQueue;
+	private Map<Integer, LinkedList<String>> messageQueue;
 	
 	private Thread multicastReceiveThread;
 	
@@ -107,20 +106,12 @@ public class M_Socket {
 	}
 	
 	public String receive(int protocolEnum) {
-		String tmp = null;	
-		if(protocolEnum >= ProtocolEnum.min && protocolEnum <= ProtocolEnum.max)
-		{
-			tmp = messageQueue.get(protocolEnum).peek();
-			if(tmp != null) messageQueue.get(protocolEnum).remove();		
+		String tmp = null;
+		if(messageQueue.get(protocolEnum).size() > 0){
+			tmp = messageQueue.get(protocolEnum).removeFirst();
 		}
-		else
-		{
-			tmp = messageQueue.get(ProtocolEnum.UNKNOWN).peek();
-			if(tmp != null) messageQueue.get(ProtocolEnum.UNKNOWN).remove();
-		}
-
 		return tmp;
-	};
+	}
 	
 	public int  queueSize(int protocolEnum) {
 		if (protocolEnum >= ProtocolEnum.min && protocolEnum <= ProtocolEnum.max) 
@@ -128,5 +119,5 @@ public class M_Socket {
 		else
 			return messageQueue.get(ProtocolEnum.UNKNOWN).size();
 		
-	};
+	}
 }
