@@ -34,7 +34,7 @@ public class Test_NetCom_Send {
 			else
 			{
 				System.out.println('"'+m+"\" was sent through channel " + address + ':' + port);
-				p1.send(m);
+				//p1.send(m);
 			}
 				
 		}

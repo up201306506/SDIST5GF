@@ -21,6 +21,6 @@ public class Test_Protocol_Backup_Send {
 		
 		Backup_Protocol bp = new Backup_Protocol(fm, chunkStored, mc, mdb);
 		
-		bp.backupFile("PostBox/a.png", "2.5", 1);
+		bp.backupFile("PostBox/music.mp3", "2.5", 1);
 	}
 }

@@ -48,7 +48,7 @@ public class Restore_Protocol extends Protocol {
 		
 		//Enviar a mensagem pelo MC
 		String msg = _HEAD + " " + version + " " + senderId + " " + fileId + " " + chunkNum;
-		mc.send(msg);
+		//mc.send(msg);
 		
 		//DEBUG
 		System.out.println(msg);
@@ -102,16 +102,16 @@ public class Restore_Protocol extends Protocol {
 	}
 	public boolean getChunkResponseLogic(){
 			
-		String msg = mc.receive(ProtocolEnum.GETCHUNK);
-		if(msg == null)
-			return false;
+		//String msg = mc.receive(ProtocolEnum.GETCHUNK);
+		/*if(msg == null)
+			return false;*/
 		
 		//DEBUG
 		System.out.println("Recebi GETCHUNK");
-		System.out.println(msg);
+		//System.out.println(msg);
 		
 		//Analisar a mensagem
-		String[] msgvars = msg.split("\\s+");
+		/*String[] msgvars = msg.split("\\s+");
 		if (!msgvars[0].equals(_HEAD))
 			return false;
 		
@@ -137,9 +137,9 @@ public class Restore_Protocol extends Protocol {
 		
 		
 		String data = "FIXME!!!";
-		mdr.send(_REPLY_HEAD + " " + version + " " + senderId + " " + fileId + " " + version + " " + version + " " + version + " " + _CRLF + _CRLF + data);
+		//mdr.send(_REPLY_HEAD + " " + version + " " + senderId + " " + fileId + " " + version + " " + version + " " + version + " " + _CRLF + _CRLF + data);
 		
-		
+		*/
 		return true;
 	}
 }

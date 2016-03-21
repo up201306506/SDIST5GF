@@ -26,7 +26,7 @@ public class Test_NetCom_Receive {
 			Boolean receivedFlag = false;
 			
 			
-			String tmp = p1.receive(-1);
+			/*String tmp = p1.receive(-1);
 			if (tmp != null)
 			{
 				System.out.println("Got a message on Default Queue: " + tmp);
@@ -40,7 +40,7 @@ public class Test_NetCom_Receive {
 					System.out.println("Got a message on Queue " + i + " : " + tmp);
 					receivedFlag = true;
 				}
-			}		
+			}*/		
 			if(!receivedFlag)
 				System.out.println("Nada");
 			

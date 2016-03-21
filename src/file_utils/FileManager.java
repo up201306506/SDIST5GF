@@ -38,8 +38,8 @@ public class FileManager {
 		return (_STORAGE + File.separator + fileId + File.separator);
 	}
 	
-	public void writeInStoreFolderFile(String fileId, String chunkNum, byte[] data){
-		String filePath = storeFolder(fileId) + fileId + "-" + chunkNum;
+	public void writeInStoreFolderFile(String fileId, int chunkNum, byte[] data){
+		String filePath = storeFolder(fileId) + fileId + "-" + String.format("%05d", chunkNum);
 		try {
 			FileOutputStream fos = new FileOutputStream(filePath);
 			fos.write(data);
@@ -52,7 +52,7 @@ public class FileManager {
 	
 	public boolean uniteFile(String fileId){
 		String filesDir = _STORAGE + File.separator + fileId;
-		String outputDir = _POSTBOX + File.separator + "a2.PNG"/*fileName*/;
+		String outputDir = _POSTBOX + File.separator + "out.mp3"/*fileName*/;
 		
 		File[] files = new File(filesDir).listFiles();
 		ArrayList<String> chunkNameHolder = new ArrayList<>();
