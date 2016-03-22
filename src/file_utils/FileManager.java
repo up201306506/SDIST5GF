@@ -50,9 +50,9 @@ public class FileManager {
 		}
 	}
 	
-	public boolean uniteFile(String fileId){
+	public boolean uniteFile(String fileId, String fileName){
 		String filesDir = _STORAGE + File.separator + fileId;
-		String outputDir = _POSTBOX + File.separator + "out.mp3"/*fileName*/;
+		String outputDir = _POSTBOX + File.separator + fileName;
 		
 		File[] files = new File(filesDir).listFiles();
 		ArrayList<String> chunkNameHolder = new ArrayList<>();

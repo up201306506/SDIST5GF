@@ -3,8 +3,9 @@ package Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import file_utils.ChunkKey;
+import file_utils.StoreChunkKey;
 import file_utils.FileManager;
+import file_utils.ReplicationValue;
 import network_communications.M_Socket;
 import protocol_communications.Backup_Protocol;
 
@@ -14,19 +15,20 @@ public class Test_Protocol_Backup_Receive {
 		
 		FileManager fm = new FileManager();
 		
-		Map<ChunkKey, Integer> chunkStored = new HashMap<>();
+		Map<String, String> fileNames = new HashMap<>();
+		Map<StoreChunkKey, ReplicationValue> chunkStored = new HashMap<>();
 		
 		M_Socket mc = new M_Socket("224.224.224.224", 15000);
 		M_Socket mdb = new M_Socket("224.224.224.225", 15001);
 		
-		Backup_Protocol bp = new Backup_Protocol(fm, chunkStored, mc, mdb);
+		Backup_Protocol bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb);
 		
 		//System.out.println("MC Socket: 224.225.226.230");
 		//System.out.println("MDB Socket: 224.225.226.231");
 		
 		while(true)
 		{
-			bp.receiveChunk();			
+			//bp.receiveChunk();			
 			
 			try {
 				Thread.sleep(500);

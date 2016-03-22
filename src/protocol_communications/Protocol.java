@@ -2,15 +2,17 @@ package protocol_communications;
 
 import java.util.Map;
 
-import file_utils.ChunkKey;
+import file_utils.StoreChunkKey;
 import file_utils.FileManager;
+import file_utils.ReplicationValue;
 import network_communications.M_Socket;
 
 public abstract class Protocol {
 
 	public static String _CRLF;
 	
-	public Map<ChunkKey, Integer> chunkStored;
+	public Map<String, String> fileIdToFileName;
+	public Map<StoreChunkKey, ReplicationValue> chunksStored;
 
 	public M_Socket mc;
 	public M_Socket mdr;
@@ -18,10 +20,10 @@ public abstract class Protocol {
 
 	public FileManager fm;
 
-	public Protocol(FileManager fm, Map<ChunkKey, Integer> cs, M_Socket mc){
-
+	public Protocol(FileManager fm, Map<String, String> fIfN, Map<StoreChunkKey, ReplicationValue> cs, M_Socket mc){
 		this.fm = fm;
-		chunkStored = cs;
+		fileIdToFileName = fIfN;
+		chunksStored = cs;
 
 		byte[] crlfArray = new byte[2];
 		crlfArray[0] = 0xD;

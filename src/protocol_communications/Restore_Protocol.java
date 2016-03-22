@@ -11,9 +11,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import file_utils.ChunkKey;
+import file_utils.StoreChunkKey;
 import file_utils.FileManager;
 import file_utils.ProtocolEnum;
+import file_utils.ReplicationValue;
 import network_communications.M_Socket;
 
 public class Restore_Protocol extends Protocol {
@@ -27,8 +28,8 @@ public class Restore_Protocol extends Protocol {
 	private Thread getChunkResponseThread;
 	private volatile Boolean getChunkResponseActive = false;
 	
-	public Restore_Protocol(FileManager fm, Map<ChunkKey, Integer> cs, M_Socket mc, M_Socket mdr) {
-		super(fm, cs, mc);
+	public Restore_Protocol(FileManager fm, Map<String, String> fIfN, Map<StoreChunkKey, ReplicationValue> cs, M_Socket mc, M_Socket mdr) {
+		super(fm, fIfN, cs, mc);
 		this.mdr = mdr;
 				
 	}

@@ -5,7 +5,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -108,7 +107,7 @@ public class M_Socket {
 		return true;
 	}
 	
-	public byte[] receive(int protocolEnum) {
+	public synchronized byte[] receive(int protocolEnum) {
 		byte[] holder = null;
 		if(messageQueue.get(protocolEnum).size() > 0){
 			holder = messageQueue.get(protocolEnum).removeFirst();

@@ -6,7 +6,6 @@ import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -14,10 +13,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import file_utils.ChunkKey;
+import file_utils.StoreChunkKey;
 import file_utils.FileManager;
 import file_utils.ProtocolEnum;
 import file_utils.RandomDelay;
+import file_utils.ReplicationValue;
 import network_communications.M_Socket;
 
 public class Backup_Protocol extends Protocol {
@@ -28,63 +28,146 @@ public class Backup_Protocol extends Protocol {
 	private static int _MAX_NUMBER_OF_RETRIES = 5;
 	private static int _INITIAL_REPLY_WAIT_TIME = 1; // seconds
 
-	public Backup_Protocol(FileManager fm, Map<ChunkKey, Integer> cs, M_Socket mc, M_Socket mdb) {
-		super(fm, cs, mc);
+	private Thread receiveChunkThread;
+	private Thread receiveStoredThread;
+
+	public Backup_Protocol(final FileManager fm, Map<String, String> fIfN, Map<StoreChunkKey, ReplicationValue> cs, final M_Socket mc, final M_Socket mdb) {
+		super(fm, fIfN, cs, mc);
 		this.mdb = mdb;
+
+		receiveChunkThread = new Thread(new Runnable() {
+			public void run() {	
+				while(true){
+					byte[] data;
+					do{
+						data = mdb.receive(ProtocolEnum.BACKUP);
+					}while(data == null);
+
+					String[] message = M_Socket.getMessage(data);
+					if(message.length != 6 || message == null) continue;
+
+					// PUTCHUNK
+					if(!message[0].equals("PUTCHUNK")) continue;
+
+					// Version of the chunk received
+					String chunkVersionReceived = message[1];
+
+					// Id of the PUTCHUNK sender
+					String backupSenderId = message[2];
+					String thisSenderId = null;
+					try{
+						thisSenderId = InetAddress.getLocalHost().getHostName();
+						//if(backupSenderId.equals(thisSenderId)) continue;
+
+					} catch (UnknownHostException e) {
+						e.printStackTrace();
+					}
+
+					// Id of the chunk file to store
+					String chunkFileId = message[3];
+
+					// Num of the chunk file to store
+					int numOfChunkToStore = Integer.parseInt(message[4]);
+
+					// Verifies if it is a chunk already received
+					if(chunksStored.containsKey(new StoreChunkKey(chunkFileId, chunkVersionReceived, numOfChunkToStore))) continue;
+
+					// Replication degree of the chunk to store
+					int chunkReplicationDegree = Integer.parseInt(message[5]);
+
+					// Register the new received chunk
+					chunksStored.put(new StoreChunkKey(chunkFileId, chunkVersionReceived, numOfChunkToStore), new ReplicationValue(chunkReplicationDegree, 1));
+
+					byte[] chunkData = M_Socket.getChunkData(data);
+
+					fm.writeInStoreFolderFile(chunkFileId, numOfChunkToStore, chunkData);
+
+					try {
+						Thread.sleep(RandomDelay.randomInt(0, 400));
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+
+					String messageToSend = _REPLY_HEAD + " " + chunkVersionReceived + " " + thisSenderId + " " +
+							chunkFileId + " " + numOfChunkToStore + " " + _CRLF + _CRLF;
+					mc.send(messageToSend.getBytes());
+				}
+			}
+		});
+
+		receiveStoredThread = new Thread(new Runnable() {
+			public void run() {
+				while(true){
+					byte[] data = null;
+					do{
+						data = mc.receive(ProtocolEnum.STORED);
+					}while(data == null);
+
+					String[] message = M_Socket.getMessage(data);
+					if(message.length != 5 || message == null) continue;
+
+					// STORED
+					if(!message[0].equals(_REPLY_HEAD)) continue;
+
+					// Version to store
+					String versionStored = message[1];
+
+					// Id of the STORED sender
+					String storedSenderId = message[2];
+					try{
+						String thisSenderId = InetAddress.getLocalHost().getHostName();
+						//if(storedSenderId.equals(thisSenderId)) continue;
+
+					} catch (UnknownHostException e) {
+						e.printStackTrace();
+					}
+
+					// Id of the STORED chunk file
+					String chunkStoredFileId = message[3];
+
+					// Num of the STORED chunk
+					int numOfChunkStored = Integer.parseInt(message[4]);
+
+					if(chunksStored.containsKey(new StoreChunkKey(chunkStoredFileId, versionStored, numOfChunkStored)))
+						chunksStored.get(new StoreChunkKey(chunkStoredFileId, versionStored, numOfChunkStored)).incrementReplicationValue();
+				}
+			}
+		});
+
+		receiveChunkThread.start();
+		receiveStoredThread.start();
 	}
 
 	// Sending Data
-	private boolean sendPutChunck(String version, String senderId, String fileId, int chunkNum, final int replicationDegree, byte[] chunkData) {
+	private boolean sendPutChunck(final String version, String senderId, final String fileId, final int chunkNum, int replicationDegree, byte[] chunkData) {
 		if(chunkData == null) return false;
-
-		final HashSet<String> storedSenderIds = new HashSet<>();
 
 		int numOfTries = 1;
 		int waitInterval = _INITIAL_REPLY_WAIT_TIME;
 		boolean backupComplete = false;
 
+		if(!chunksStored.containsKey(new StoreChunkKey(fileId, version, chunkNum)))
+			chunksStored.put(new StoreChunkKey(fileId, version, chunkNum), new ReplicationValue(replicationDegree, 0));
+
 		ExecutorService receiveExecutor = Executors.newFixedThreadPool(1);
 		Runnable receiveRunnable = new Runnable() {
 			@Override
 			public void run() {
-
-				byte[] data = null;
-				do{
-					data = mc.receive(ProtocolEnum.STORED);
-				}while(data == null);
-				
-				String[] message = M_Socket.getMessage(data);
-				if(message.length != 5 && message == null) return;
-				
-				// STORED
-				if(!message[0].equals(_REPLY_HEAD)) return;
-				
-				// Version to store
-				String versionToStore = message[1];
-				
-				// Id of the STORED sender
-				String storedSenderId = message[2];
-				
-				// Id of the STORED chunk file
-				String chunkFileId = message[3];
-				
-				// Num of the STORED chunk
-				int numOfChunkStored = Integer.parseInt(message[4]);
-
-				storedSenderIds.add(storedSenderId);
-				return;
+				while(!chunksStored.get(new StoreChunkKey(fileId, version, chunkNum)).replicationValueAboveOrEqualToDegree()){
+					
+				}
 			}
 		};
-		
+
 		String headMessageToSendStr = _HEAD + " " + version + " " + senderId + " " + fileId + " " + chunkNum + " " +
-						replicationDegree + " " + _CRLF + _CRLF;
-		
+				replicationDegree + " " + _CRLF + _CRLF;
+
 		byte[] messageToSend = M_Socket.joinMessageToChunk(headMessageToSendStr, chunkData);
-		
+
 		while(( numOfTries <= _MAX_NUMBER_OF_RETRIES ) && !backupComplete){
-			
+
 			mdb.send(messageToSend);
-			
+
 			try {
 				receiveExecutor.submit(receiveRunnable).get(waitInterval, TimeUnit.SECONDS);
 			} catch (InterruptedException e) {
@@ -98,11 +181,11 @@ public class Backup_Protocol extends Protocol {
 				numOfTries++;
 				waitInterval = waitInterval * 2;
 			}
-			
-			if(storedSenderIds.size() == replicationDegree) backupComplete = true;
-		}
 
-		if(backupComplete) chunkStored.put(new ChunkKey(fileId, chunkNum), replicationDegree);
+			if(chunksStored.containsKey(new StoreChunkKey(fileId, version, chunkNum)))
+				if(chunksStored.get(new StoreChunkKey(fileId, version, chunkNum)).replicationValueAboveOrEqualToDegree())
+					backupComplete = true;
+		}
 
 		return backupComplete;
 	}
@@ -116,10 +199,9 @@ public class Backup_Protocol extends Protocol {
 
 			File fileTemp = new File(filePath);
 			String fileName = fileTemp.getName();
-			String fileDateModified = "" + fileTemp.lastModified();
 
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
-			md.update((fileName + fileDateModified).getBytes());
+			md.update(fileName.getBytes());
 			byte[] mdBytes = md.digest();
 
 			StringBuffer hexString = new StringBuffer();
@@ -128,6 +210,8 @@ public class Backup_Protocol extends Protocol {
 			}
 
 			String fileId = hexString.toString();
+			if(!fileIdToFileName.containsKey(fileId))
+				fileIdToFileName.put(fileId, fileName);
 
 			for(int i = 0; i < data.size(); i++){
 				System.out.println("Chunk: " + i + "\tSize: " + data.get(i).length);
@@ -139,66 +223,9 @@ public class Backup_Protocol extends Protocol {
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
-
+		
 		System.out.println("Backed up file");
 
-		return true;
-	}
-
-	// Sending Receiving Confirmation
-	private boolean sendStoredChunck(String version, String senderId, String fileId, int chunkNum) {
-
-		try {
-			Thread.sleep(RandomDelay.randomInt(0, 400));
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-		String messageToSend = _REPLY_HEAD + " " + version + " " + senderId + " " + fileId + " " + chunkNum + " " + _CRLF + _CRLF;
-		mc.send(messageToSend.getBytes());
-
-		return true;
-	}
-
-	public boolean receiveChunk(){
-		byte[] data = mdb.receive(ProtocolEnum.BACKUP);
-		if(data == null) return false;
-		
-		String[] message = M_Socket.getMessage(data);
-		if(message.length != 6 && message == null) return false;
-		
-		// PUTCHUNK
-		if(!message[0].equals("PUTCHUNK")) return false;
-		
-		// Version of the chunk received
-		String chunkVersionReceived = message[1];
-		
-		// Id of the PUTCHUNK sender
-		String backupSenderId = message[2];
-		
-		// Id of the chunk file to store
-		String chunkFileId = message[3];
-		
-		// Num of the chunk file to store
-		int numOfChunkToStore = Integer.parseInt(message[4]);
-		
-		// Replication degree of the chunk to store
-		int chunkReplicationDegree = Integer.parseInt(message[5]);
-		
-		byte[] chunkData = M_Socket.getChunkData(data);
-		
-		fm.writeInStoreFolderFile(chunkFileId, numOfChunkToStore, chunkData);
-
-		String senderId;
-		try {
-			senderId = InetAddress.getLocalHost().getHostName();
-
-			if(!sendStoredChunck(chunkVersionReceived, senderId, chunkFileId, numOfChunkToStore)) return false;
-			
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
-		
 		return true;
 	}
 }
