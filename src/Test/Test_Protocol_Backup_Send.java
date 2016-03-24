@@ -15,14 +15,19 @@ public class Test_Protocol_Backup_Send {
 		
 		FileManager fm = new FileManager();
 		
-		Map<String, String> fileNames = new HashMap<>();
-		Map<StoreChunkKey, ReplicationValue> chunkStored = new HashMap<>();
+		Map<String, String> fileNames = FileManager.readFileIdToName();
+		Map<StoreChunkKey, ReplicationValue> chunkStored = FileManager.readStoreChunkReplicationRegisters();
 		
 		M_Socket mc = new M_Socket("224.224.224.224", 15000);
 		M_Socket mdb = new M_Socket("224.224.224.225", 15001);
 		
 		Backup_Protocol bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb);
 		
-		bp.backupFile("PostBox/ppg.png", "2.5", 1);
+		bp.backupFile("PostBox/a.png", "2.8", 1);
+		
+		FileManager.writeFileIdToNameRegisters(fileNames);
+		FileManager.writeStoreChunkReplicationRegisters(chunkStored);
+		
+		System.exit(0);
 	}
 }

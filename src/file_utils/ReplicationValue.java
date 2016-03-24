@@ -20,4 +20,11 @@ public class ReplicationValue {
 	public void decrementReplicationValue(){
 		if(replicationValue > 0) replicationValue--;
 	}
+	
+	@Override
+	public String toString() {
+		String eol = System.getProperty("line.separator");
+		String result = replicationDegree + eol + replicationValue;
+		return result;
+	}
 }

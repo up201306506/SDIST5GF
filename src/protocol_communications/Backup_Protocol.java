@@ -37,14 +37,14 @@ public class Backup_Protocol extends Protocol {
 
 		receiveChunkThread = new Thread(new Runnable() {
 			public void run() {	
-				while(true){
+				NEXT: while(true){
 					byte[] data;
 					do{
 						data = mdb.receive(ProtocolEnum.BACKUP);
 					}while(data == null);
 
 					String[] message = M_Socket.getMessage(data);
-					if(message.length != 6 || message == null) continue;
+					if(message == null || message.length != 6) continue;
 
 					// PUTCHUNK
 					if(!message[0].equals("PUTCHUNK")) continue;
@@ -70,7 +70,23 @@ public class Backup_Protocol extends Protocol {
 					int numOfChunkToStore = Integer.parseInt(message[4]);
 
 					// Verifies if it is a chunk already received
-					if(chunksStored.containsKey(new StoreChunkKey(chunkFileId, chunkVersionReceived, numOfChunkToStore))) continue;
+					if(chunksStored.containsKey(new StoreChunkKey(chunkFileId, chunkVersionReceived, numOfChunkToStore))){
+						for(Map.Entry<StoreChunkKey, ReplicationValue> entry : chunksStored.entrySet()){
+							if(entry.getKey().equals(new StoreChunkKey(chunkFileId, chunkVersionReceived, numOfChunkToStore))){
+								String version = entry.getKey().getVersion();
+								if(Float.parseFloat(version) < Float.parseFloat(chunkVersionReceived)){
+									System.out.println("Versao maior");
+									break;
+								}else{
+									System.out.println("Versao menor ou igual");
+									continue NEXT;
+								}
+							}
+						}
+						continue;
+					}else{
+						System.out.println("Versao inexistente");
+					}
 
 					// Replication degree of the chunk to store
 					int chunkReplicationDegree = Integer.parseInt(message[5]);
@@ -104,7 +120,7 @@ public class Backup_Protocol extends Protocol {
 					}while(data == null);
 
 					String[] message = M_Socket.getMessage(data);
-					if(message.length != 5 || message == null) continue;
+					if(message == null || message.length != 5) continue;
 
 					// STORED
 					if(!message[0].equals(_REPLY_HEAD)) continue;
@@ -128,8 +144,10 @@ public class Backup_Protocol extends Protocol {
 					// Num of the STORED chunk
 					int numOfChunkStored = Integer.parseInt(message[4]);
 
-					if(chunksStored.containsKey(new StoreChunkKey(chunkStoredFileId, versionStored, numOfChunkStored)))
+					if(chunksStored.containsKey(new StoreChunkKey(chunkStoredFileId, versionStored, numOfChunkStored))){
 						chunksStored.get(new StoreChunkKey(chunkStoredFileId, versionStored, numOfChunkStored)).incrementReplicationValue();
+						FileManager.writeStoreChunkReplicationRegisters(chunksStored);
+					}
 				}
 			}
 		});
@@ -154,7 +172,7 @@ public class Backup_Protocol extends Protocol {
 			@Override
 			public void run() {
 				while(!chunksStored.get(new StoreChunkKey(fileId, version, chunkNum)).replicationValueAboveOrEqualToDegree()){
-					
+
 				}
 			}
 		};
@@ -187,6 +205,7 @@ public class Backup_Protocol extends Protocol {
 					backupComplete = true;
 		}
 
+		receiveExecutor.shutdown();
 		return backupComplete;
 	}
 
@@ -194,11 +213,13 @@ public class Backup_Protocol extends Protocol {
 		ArrayList<byte[]> data = fm.splitFile(filePath);
 		if(data == null) return false;
 
+		String fileId = null;
+		String fileName = null;
 		try {
 			String senderId = InetAddress.getLocalHost().getHostName();
 
 			File fileTemp = new File(filePath);
-			String fileName = fileTemp.getName();
+			fileName = fileTemp.getName();
 
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
 			md.update(fileName.getBytes());
@@ -209,9 +230,7 @@ public class Backup_Protocol extends Protocol {
 				hexString.append(Integer.toHexString(0xFF & mdBytes[i]));
 			}
 
-			String fileId = hexString.toString();
-			if(!fileIdToFileName.containsKey(fileId))
-				fileIdToFileName.put(fileId, fileName);
+			fileId = hexString.toString();
 
 			for(int i = 0; i < data.size(); i++){
 				System.out.println("Chunk: " + i + "\tSize: " + data.get(i).length);
@@ -223,8 +242,14 @@ public class Backup_Protocol extends Protocol {
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
-		
+
 		System.out.println("Backed up file");
+
+		if(fileId != null && fileName != null)
+			if(!fileIdToFileName.containsKey(fileId)){
+				fileIdToFileName.put(fileId, fileName);
+				FileManager.writeFileIdToName(fileId, fileName);
+			}
 
 		return true;
 	}

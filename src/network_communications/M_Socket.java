@@ -127,6 +127,7 @@ public class M_Socket {
 	}
 	
 	public static String[] getMessage(byte[] data){
+		if(data == null) return null;
 		String[] tmpStringArray = (new String(data)).split("\\s+");
 		
 		String[] result;
@@ -162,7 +163,7 @@ public class M_Socket {
 		return result;
 	}
 	
-	public int  queueSize(int protocolEnum) {
+	public int queueSize(int protocolEnum) {
 		if (protocolEnum >= ProtocolEnum.min && protocolEnum <= ProtocolEnum.max) 
 			return messageQueue.get(protocolEnum).size();
 		else
