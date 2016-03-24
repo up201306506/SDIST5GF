@@ -11,6 +11,10 @@ public class StoreChunkKey {
 		chunkNum = cNum;
 	}
 	
+	public String getVersion(){
+		return version;
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if(!(obj instanceof StoreChunkKey)){
@@ -19,7 +23,6 @@ public class StoreChunkKey {
 	    	StoreChunkKey that = (StoreChunkKey)obj;
 	    	
 	    	if(!this.fileId.equals(that.fileId)) return false;
-	    	if(!this.version.equals(that.version)) return false;
 	    	if(this.chunkNum != that.chunkNum) return false;
 	    	
 	    	return true;
@@ -29,8 +32,16 @@ public class StoreChunkKey {
 	@Override
 	public int hashCode() {
 		int hash = this.fileId.hashCode();
-	    hash = hash * 31 + this.version.hashCode();
 	    hash = hash * 31 + ("" + this.chunkNum).hashCode();
 	    return hash;
+	}
+	
+	@Override
+	public String toString() {
+		String eol = System.getProperty("line.separator");
+		String result = fileId + eol +
+						version + eol +
+						chunkNum;
+		return result;
 	}
 }

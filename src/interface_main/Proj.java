@@ -13,7 +13,7 @@ public class Proj {
 
 	public static void main(String[] args) {
 		// FileId -> FileName
-		Map<String, String> fileNames = new HashMap<>();
+		Map<String, String> fileNames = FileManager.readFileIdToName();
 		// FileId + version + ChunkNum -- > replicationDegree + numOfChunksStored
 		Map<StoreChunkKey, ReplicationValue> chunkStored = new HashMap<>();
 
@@ -23,5 +23,10 @@ public class Proj {
 		M_Socket mdb = new M_Socket("224.225.226.228", 12346);
 		
 		Backup_Protocol bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb);
+		
+		// Closing execution functions
+		FileManager.writeFileIdToNameRegisters(fileNames);
+		
+		System.exit(0);
 	}
 }
