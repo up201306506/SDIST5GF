@@ -57,7 +57,7 @@ public class Backup_Protocol extends Protocol {
 					String thisSenderId = null;
 					try{
 						thisSenderId = InetAddress.getLocalHost().getHostName();
-						//if(backupSenderId.equals(thisSenderId)) continue;
+						if(backupSenderId.equals(thisSenderId)) continue;
 
 					} catch (UnknownHostException e) {
 						e.printStackTrace();
@@ -71,6 +71,7 @@ public class Backup_Protocol extends Protocol {
 
 					// Verifies if it is a chunk already received
 					if(chunksStored.containsKey(new StoreChunkKey(chunkFileId, chunkVersionReceived, numOfChunkToStore))){
+						System.out.println("Versao Existente");
 						for(Map.Entry<StoreChunkKey, ReplicationValue> entry : chunksStored.entrySet()){
 							if(entry.getKey().equals(new StoreChunkKey(chunkFileId, chunkVersionReceived, numOfChunkToStore))){
 								String version = entry.getKey().getVersion();
@@ -132,7 +133,7 @@ public class Backup_Protocol extends Protocol {
 					String storedSenderId = message[2];
 					try{
 						String thisSenderId = InetAddress.getLocalHost().getHostName();
-						//if(storedSenderId.equals(thisSenderId)) continue;
+						if(storedSenderId.equals(thisSenderId)) continue;
 
 					} catch (UnknownHostException e) {
 						e.printStackTrace();

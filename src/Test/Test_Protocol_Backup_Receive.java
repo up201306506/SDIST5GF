@@ -23,26 +23,6 @@ public class Test_Protocol_Backup_Receive {
 		
 		Backup_Protocol bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb);
 		
-		//System.out.println("MC Socket: 224.225.226.230");
-		//System.out.println("MDB Socket: 224.225.226.231");
-		
-		while(true)
-		{
-			//bp.receiveChunk();			
-			
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			
-			//System.out.println("Queue Sizes: ");
-			//System.out.println("MC:" + mc.queueSize(-1) + " MDB:" + mdb.queueSize(-1) + "//Non-Protocol");
-			//System.out.println("MC:" + mc.queueSize(1) + " MDB:" + mdb.queueSize(1) + "//PUTCHUNK");
-			//System.out.println("MC:" + mc.queueSize(2) + " MDB:" + mdb.queueSize(2) + "//STORED");
-			
-			System.out.println("Receiving");
-		}
-		
+		System.out.println("Started receiving...");
 	}
 }
