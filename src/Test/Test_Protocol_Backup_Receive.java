@@ -1,7 +1,8 @@
 package Test;
 
-import java.util.HashMap;
+import java.io.IOException;
 import java.util.Map;
+import java.util.Scanner;
 
 import file_utils.StoreChunkKey;
 import file_utils.FileManager;
@@ -15,8 +16,8 @@ public class Test_Protocol_Backup_Receive {
 		
 		FileManager fm = new FileManager();
 		
-		Map<String, String> fileNames = new HashMap<>();
-		Map<StoreChunkKey, ReplicationValue> chunkStored = new HashMap<>();
+		Map<String, String> fileNames = FileManager.readFileIdToName();
+		Map<StoreChunkKey, ReplicationValue> chunkStored = FileManager.readStoreChunkReplicationRegisters();
 		
 		M_Socket mc = new M_Socket("224.224.224.224", 15000);
 		M_Socket mdb = new M_Socket("224.224.224.225", 15001);
@@ -24,5 +25,19 @@ public class Test_Protocol_Backup_Receive {
 		Backup_Protocol bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb);
 		
 		System.out.println("Started receiving...");
+		System.out.println("< press any key to stop executing >");
+		
+		try {
+			System.in.read();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("Stopping!");
+		
+		FileManager.writeFileIdToNameRegisters(fileNames);
+		FileManager.writeStoreChunkReplicationRegisters(chunkStored);
+		
+		System.exit(0);
 	}
 }
