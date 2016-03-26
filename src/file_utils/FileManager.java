@@ -55,7 +55,8 @@ public class FileManager {
 		String filePath = storeFolder(fileId) + fileId + "-" + String.format("%05d", chunkNum);
 		try {
 			FileOutputStream fos = new FileOutputStream(filePath);
-			fos.write(data);
+			if(data != null) fos.write(data);
+			else fos.write(("").getBytes());
 			fos.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -117,6 +118,7 @@ public class FileManager {
 			}
 
 			int bytesRead = bis.read(buffer);
+			if(bytesRead == -1) bytesRead = 0;
 			byte[] smallBuffer = new byte[bytesRead];
 			System.arraycopy(buffer, 0, smallBuffer, 0, bytesRead);
 			result.add(smallBuffer);
@@ -207,7 +209,7 @@ public class FileManager {
 		}
 	}
 
-	public static void writeStoreChunkReplicationRegisters(Map<StoreChunkKey, ReplicationValue> storeChunkMap){
+	public synchronized static void writeStoreChunkReplicationRegisters(Map<StoreChunkKey, ReplicationValue> storeChunkMap){
 		try {
 			PrintWriter writer = new PrintWriter(_STORECHUNK_REPLICATION);
 			writer.print("");
@@ -216,11 +218,9 @@ public class FileManager {
 			e.printStackTrace();
 		}
 		
-		Iterator<Entry<StoreChunkKey, ReplicationValue>> it = storeChunkMap.entrySet().iterator();
-		
-		while(it.hasNext()){
-			Map.Entry<StoreChunkKey, ReplicationValue> pair = (Map.Entry<StoreChunkKey, ReplicationValue>) it.next();
-			writeStoreChunkReplicationValue(pair.getKey(), pair.getValue());
+		for (Map.Entry<StoreChunkKey, ReplicationValue> entry : storeChunkMap.entrySet())
+		{
+			writeStoreChunkReplicationValue(entry.getKey(), entry.getValue());
 		}
 	}
 

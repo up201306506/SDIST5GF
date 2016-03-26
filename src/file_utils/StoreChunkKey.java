@@ -15,6 +15,10 @@ public class StoreChunkKey {
 		return version;
 	}
 	
+	public void setVersion(String v){
+		version = v;
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if(!(obj instanceof StoreChunkKey)){

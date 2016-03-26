@@ -19,7 +19,7 @@ public class Test_NetCom_QueueSize {
 		
 		M_Socket p1 = new M_Socket(address, Integer.parseInt(port));
 		
-		int cycles = 0;
+		/*int cycles = 0;
 		while(cycles < 120){ 
 			System.out.println("----------------------------------------");
 			System.out.println("Default Queue Size: " + p1.queueSize(-1));
@@ -34,7 +34,7 @@ public class Test_NetCom_QueueSize {
 			
 			Thread.sleep(500);
 			
-		}
+		}*/
 		return;
 	}
 }

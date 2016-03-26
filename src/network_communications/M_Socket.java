@@ -5,15 +5,17 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import file_utils.ProtocolEnum;
 
 public class M_Socket {
 	
-	private static int _BUFFER_LENGTH = 65535;
+	private static int _BUFFER_LENGTH = 64512;
 	
 	private InetAddress multicastAddress;
 	private static byte[] bufferData;
@@ -34,7 +36,7 @@ public class M_Socket {
 			bufferData = new byte[_BUFFER_LENGTH];
 			port = p;
 			
-			messageQueue = new HashMap<>();			
+			messageQueue = new HashMap<>();
 			messageQueue.put(ProtocolEnum.UNKNOWN, new LinkedList<byte[]>());
 			for(int i = ProtocolEnum.min; i <= ProtocolEnum.max; i++)
 				messageQueue.put(i, new LinkedList<byte[]>());
@@ -52,8 +54,13 @@ public class M_Socket {
 			public void run() {
 				while (true) {
 					try {
+						packet = new DatagramPacket(bufferData, bufferData.length);
 						multicastSocket.receive(packet);
-						byte[] data = packet.getData();
+						
+						byte[] data = new byte[packet.getLength()];
+						System.arraycopy(packet.getData(), 0, data, 0, packet.getLength());
+						
+						//byte[] data = packet.getData();
 						String tmp = new String(data, 0, data.length);
 						int blankSpaceIndex = tmp.indexOf(" ");
 						if(blankSpaceIndex != -1)
@@ -156,18 +163,21 @@ public class M_Socket {
 			}
 		}
 		
-		if(bodyIndex >= data.length) return null;
+		int nullIndex = (new String(data)).trim().getBytes().length;	
+		System.out.println("Body Index : " + bodyIndex + " - Null Index " + nullIndex + " - Data Length " + data.length);
+		
+		if(bodyIndex > data.length) return null;
+		
+		/*byte[] result;
+		if(nullIndex >= bodyIndex)
+			result = new byte[nullIndex - bodyIndex];
+		else
+			result = new byte[0];*/
 		
 		byte[] result = new byte[data.length - bodyIndex];
+		
+		System.out.println(result.length);
 		System.arraycopy(data, bodyIndex, result, 0, result.length);
 		return result;
-	}
-	
-	public int queueSize(int protocolEnum) {
-		if (protocolEnum >= ProtocolEnum.min && protocolEnum <= ProtocolEnum.max) 
-			return messageQueue.get(protocolEnum).size();
-		else
-			return messageQueue.get(ProtocolEnum.UNKNOWN).size();
-		
 	}
 }
