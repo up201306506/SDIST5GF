@@ -22,7 +22,7 @@ public class Test_Protocol_Backup_Send {
 		
 		Backup_Protocol bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb);
 		
-		bp.backupFile("PostBox/a.png", "2.8", 1);
+		bp.backupFile("PostBox/a.png", "3.0", 1);
 		
 		FileManager.writeFileIdToNameRegisters(fileNames);
 		FileManager.writeStoreChunkReplicationRegisters(chunkStored);

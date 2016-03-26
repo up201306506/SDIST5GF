@@ -37,8 +37,8 @@ public class Backup_Protocol extends Protocol {
 
 		receiveChunkThread = new Thread(new Runnable() {
 			public void run() {	
-				NEXT: while(true){
-					byte[] data;
+				while(true){
+					byte[] data = null;
 					do{
 						data = mdb.receive(ProtocolEnum.BACKUP);
 					}while(data == null);
@@ -57,7 +57,7 @@ public class Backup_Protocol extends Protocol {
 					String thisSenderId = null;
 					try{
 						thisSenderId = InetAddress.getLocalHost().getHostName();
-						if(backupSenderId.equals(thisSenderId)) continue;
+						//if(backupSenderId.equals(thisSenderId)) continue;
 
 					} catch (UnknownHostException e) {
 						e.printStackTrace();
@@ -71,22 +71,23 @@ public class Backup_Protocol extends Protocol {
 
 					// Verifies if it is a chunk already received
 					if(chunksStored.containsKey(new StoreChunkKey(chunkFileId, chunkVersionReceived, numOfChunkToStore))){
-						System.out.println("Versao Existente");
+						boolean jumpToNext = false;
+
 						for(Map.Entry<StoreChunkKey, ReplicationValue> entry : chunksStored.entrySet()){
 							if(entry.getKey().equals(new StoreChunkKey(chunkFileId, chunkVersionReceived, numOfChunkToStore))){
 								String version = entry.getKey().getVersion();
-								if(Float.parseFloat(version) < Float.parseFloat(chunkVersionReceived)){
-									System.out.println("Versao maior");
-									break;
-								}else{
-									System.out.println("Versao menor ou igual");
-									continue NEXT;
-								}
+								if(Float.parseFloat(version) < Float.parseFloat(chunkVersionReceived))
+									entry.getKey().setVersion(chunkVersionReceived);
+								else
+									jumpToNext = true;
+								break;
 							}
 						}
-						continue;
-					}else{
-						System.out.println("Versao inexistente");
+
+						if(jumpToNext){
+							jumpToNext = false;
+							continue;
+						}
 					}
 
 					// Replication degree of the chunk to store
@@ -133,7 +134,7 @@ public class Backup_Protocol extends Protocol {
 					String storedSenderId = message[2];
 					try{
 						String thisSenderId = InetAddress.getLocalHost().getHostName();
-						if(storedSenderId.equals(thisSenderId)) continue;
+						//if(storedSenderId.equals(thisSenderId)) continue;
 
 					} catch (UnknownHostException e) {
 						e.printStackTrace();
