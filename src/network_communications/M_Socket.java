@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class M_Socket {
 			bufferData = new byte[_BUFFER_LENGTH];
 			port = p;
 			
-			messageQueue = new HashMap<>();
+			messageQueue = new ConcurrentHashMap<Integer, LinkedList<byte[]>>();
 			messageQueue.put(ProtocolEnum.UNKNOWN, new LinkedList<byte[]>());
 			for(int i = ProtocolEnum.min; i <= ProtocolEnum.max; i++)
 				messageQueue.put(i, new LinkedList<byte[]>());
