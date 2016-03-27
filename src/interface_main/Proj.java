@@ -12,12 +12,13 @@ import protocol_communications.Backup_Protocol;
 public class Proj {
 
 	public static void main(String[] args) {
+		
+		FileManager fm = new FileManager();
+		
 		// FileId -> FileName
-		Map<String, String> fileNames = FileManager.readFileIdToName();
+		Map<String, String> fileNames = fm.readFileIdToName();
 		// FileId + version + ChunkNum -- > replicationDegree + numOfChunksStored
 		Map<StoreChunkKey, ReplicationValue> chunkStored = new HashMap<>();
-
-		FileManager fm = new FileManager();
 
 		M_Socket mc = new M_Socket("224.225.226.227", 12345);
 		M_Socket mdb = new M_Socket("224.225.226.228", 12346);
@@ -25,7 +26,7 @@ public class Proj {
 		Backup_Protocol bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb);
 		
 		// Closing execution functions
-		FileManager.writeFileIdToNameRegisters(fileNames);
+		fm.writeFileIdToNameRegisters(fileNames);
 		
 		System.exit(0);
 	}
