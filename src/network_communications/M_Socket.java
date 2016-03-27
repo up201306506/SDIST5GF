@@ -163,16 +163,7 @@ public class M_Socket {
 			}
 		}
 		
-		int nullIndex = (new String(data)).trim().getBytes().length;	
-		System.out.println("Body Index : " + bodyIndex + " - Null Index " + nullIndex + " - Data Length " + data.length);
-		
 		if(bodyIndex > data.length) return null;
-		
-		/*byte[] result;
-		if(nullIndex >= bodyIndex)
-			result = new byte[nullIndex - bodyIndex];
-		else
-			result = new byte[0];*/
 		
 		byte[] result = new byte[data.length - bodyIndex];
 		
