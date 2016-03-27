@@ -219,9 +219,7 @@ public class FileManager {
 		}
 		
 		for (Map.Entry<StoreChunkKey, ReplicationValue> entry : storeChunkMap.entrySet())
-		{
 			writeStoreChunkReplicationValue(entry.getKey(), entry.getValue());
-		}
 	}
 
 	public static Map<StoreChunkKey, ReplicationValue> readStoreChunkReplicationRegisters(){
