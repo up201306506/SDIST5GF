@@ -14,8 +14,8 @@ public class Test_NetCom_Send {
 				Pede e envia mensagens no canal de comunicação.
 		*/
 		
-		String address = "224.225.226.228";
-		String port = "12346";
+		String address = "224.224.224.225";
+		String port = "15001";
 		
 		M_Socket p1 = new M_Socket(address, Integer.parseInt(port));
 		
@@ -34,7 +34,7 @@ public class Test_NetCom_Send {
 			else
 			{
 				System.out.println('"'+m+"\" was sent through channel " + address + ':' + port);
-				p1.send(m);
+				//p1.send(m);
 			}
 				
 		}
