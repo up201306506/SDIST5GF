@@ -1,8 +1,6 @@
 package protocol_communications;
 
 import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -31,8 +29,8 @@ public class Backup_Protocol extends Protocol {
 	private Thread receiveChunkThread;
 	private Thread receiveStoredThread;
 
-	public Backup_Protocol(final FileManager fm, Map<String, String> fIfN, Map<StoreChunkKey, ReplicationValue> cs, final M_Socket mc, final M_Socket mdb) {
-		super(fm, fIfN, cs, mc);
+	public Backup_Protocol(final FileManager fm, Map<String, String> fIfN, Map<StoreChunkKey, ReplicationValue> cs, final M_Socket mc, final M_Socket mdb, String peerdId) {
+		super(fm, fIfN, cs, mc, peerdId);
 		this.mdb = mdb;
 
 		receiveChunkThread = new Thread(new Runnable() {
@@ -54,14 +52,7 @@ public class Backup_Protocol extends Protocol {
 
 					// Id of the PUTCHUNK sender
 					String backupSenderId = message[2];
-					String thisSenderId = null;
-					try{
-						thisSenderId = InetAddress.getLocalHost().getHostName();
-						if(backupSenderId.equals(thisSenderId)) continue;
-
-					} catch (UnknownHostException e) {
-						e.printStackTrace();
-					}
+					if(backupSenderId.equals(thisPeerId)) continue;
 
 					// Id of the chunk file to store
 					String chunkFileId = message[3];
@@ -106,7 +97,7 @@ public class Backup_Protocol extends Protocol {
 						e.printStackTrace();
 					}
 
-					String messageToSend = _REPLY_HEAD + " " + chunkVersionReceived + " " + thisSenderId + " " +
+					String messageToSend = _REPLY_HEAD + " " + chunkVersionReceived + " " + thisPeerId + " " +
 							chunkFileId + " " + numOfChunkToStore + " " + _CRLF + _CRLF;
 					mc.send(messageToSend.getBytes());
 				}
@@ -132,13 +123,7 @@ public class Backup_Protocol extends Protocol {
 
 					// Id of the STORED sender
 					String storedSenderId = message[2];
-					try{
-						String thisSenderId = InetAddress.getLocalHost().getHostName();
-						if(storedSenderId.equals(thisSenderId)) continue;
-
-					} catch (UnknownHostException e) {
-						e.printStackTrace();
-					}
+					if(storedSenderId.equals(thisPeerId)) continue;
 
 					// Id of the STORED chunk file
 					String chunkStoredFileId = message[3];
@@ -218,7 +203,6 @@ public class Backup_Protocol extends Protocol {
 		String fileId = null;
 		String fileName = null;
 		try {
-			String senderId = InetAddress.getLocalHost().getHostName();
 
 			File fileTemp = new File(filePath);
 			fileName = fileTemp.getName();
@@ -236,11 +220,9 @@ public class Backup_Protocol extends Protocol {
 
 			for(int i = 0; i < data.size(); i++){
 				System.out.println("Chunk: " + i + "\tSize: " + data.get(i).length);
-				if(!sendPutChunck(version, senderId, fileId, i, replicationDegree, data.get(i))) return false;
+				if(!sendPutChunck(version, thisPeerId, fileId, i, replicationDegree, data.get(i))) return false;
 			}
 
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}

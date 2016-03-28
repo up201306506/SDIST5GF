@@ -14,11 +14,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FileManager {
 
@@ -28,7 +28,7 @@ public class FileManager {
 	private static String _STORECHUNK_REPLICATION = "StoreChunkReplication.txt";
 	private static String _FILE_DATA_SEPARATOR = "---";
 
-	private static int _CHUNK_SIZE = 64000;
+	public static int _CHUNK_SIZE = 64000;
 
 	public FileManager(){
 		File dirPostBox = new File(_POSTBOX);
@@ -170,7 +170,7 @@ public class FileManager {
 			e.printStackTrace();
 		}
 
-		Map<String, String> fIdToName = new HashMap<>();
+		Map<String, String> fIdToName = new ConcurrentHashMap<String, String>();
 		try {
 			BufferedReader bReader = new BufferedReader(new FileReader(_FID_TO_NAME));
 
@@ -229,7 +229,7 @@ public class FileManager {
 			e.printStackTrace();
 		}
 
-		Map<StoreChunkKey, ReplicationValue> storeChunkReplicationRegisters = new HashMap<>();
+		Map<StoreChunkKey, ReplicationValue> storeChunkReplicationRegisters = new ConcurrentHashMap<StoreChunkKey, ReplicationValue>();
 		try {
 			BufferedReader bReader = new BufferedReader(new FileReader(_STORECHUNK_REPLICATION));
 
@@ -257,5 +257,27 @@ public class FileManager {
 		}
 
 		return storeChunkReplicationRegisters;
+	}
+
+	public byte[] readChunkData(String chunkVersion, String chunkFileId, int numOfChunk) {
+		String chunkFilePath = _STORAGE + File.separator + chunkFileId + File.separator + chunkFileId + "-" + String.format("%05d", numOfChunk);
+		
+		try {
+			File chunkFile = new File(chunkFilePath);
+			FileInputStream fis = new FileInputStream(chunkFile);
+			
+			byte[] data = new byte[(int) chunkFile.length()];
+			fis.read(data);
+			
+			fis.close();
+			
+			return data;
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+			e.getCause();
+		}
+		
+		return null;
 	}
 }

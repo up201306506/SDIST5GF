@@ -9,8 +9,8 @@ import network_communications.M_Socket;
 
 public class Removal_Protocol extends Protocol {
 
-	public Removal_Protocol(FileManager fm, Map<String, String> fIfN, Map<StoreChunkKey, ReplicationValue> cs, M_Socket mc) {
-		super(fm, fIfN, cs, mc);
+	public Removal_Protocol(FileManager fm, Map<String, String> fIfN, Map<StoreChunkKey, ReplicationValue> cs, M_Socket mc, String peerId) {
+		super(fm, fIfN, cs, mc, peerId);
 		// TODO Auto-generated constructor stub
 	}
 
