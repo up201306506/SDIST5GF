@@ -133,10 +133,11 @@ public class TestApp {
 
 		String message = args[1];
 		if(args[1].equals("BACKUP"))
-			message.concat(" " + args[3]);
+			message += (" " + args[3]);
 		if(args[1].equals("RECLAIM"))
-			message.concat(" " + args[2]);
+			message += (" " + args[2]);
 		String response = args[1] + " OK";
+		System.out.println(args[1] + " command sent");
 		if (!sendMessageWaitResponse(message, response, peerRead, peerWrite))
 		{
 			System.out.println("The " + args[1] + " command was unsuccesful on the peer's end");
