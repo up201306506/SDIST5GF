@@ -57,7 +57,7 @@ public class Backup_Protocol extends Protocol {
 					String thisSenderId = null;
 					try{
 						thisSenderId = InetAddress.getLocalHost().getHostName();
-						if(backupSenderId.equals(thisSenderId)) continue;
+						//if(backupSenderId.equals(thisSenderId)) continue;
 
 					} catch (UnknownHostException e) {
 						e.printStackTrace();
@@ -134,7 +134,7 @@ public class Backup_Protocol extends Protocol {
 					String storedSenderId = message[2];
 					try{
 						String thisSenderId = InetAddress.getLocalHost().getHostName();
-						if(storedSenderId.equals(thisSenderId)) continue;
+						//if(storedSenderId.equals(thisSenderId)) continue;
 
 					} catch (UnknownHostException e) {
 						e.printStackTrace();
