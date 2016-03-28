@@ -2,7 +2,6 @@ package Test;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Scanner;
 
 import file_utils.StoreChunkKey;
 import file_utils.FileManager;

@@ -259,4 +259,26 @@ public class FileManager {
 
 		return storeChunkReplicationRegisters;
 	}
+
+	public byte[] readChunkData(String chunkVersion, String chunkFileId, int numOfChunk) {
+		String chunkFilePath = _STORAGE + File.separator + chunkFileId + File.separator + chunkFileId + "-" + String.format("%05d", numOfChunk);
+		
+		try {
+			File chunkFile = new File(chunkFilePath);
+			FileInputStream fis = new FileInputStream(chunkFile);
+			
+			byte[] data = new byte[(int) chunkFile.length()];
+			fis.read(data);
+			
+			fis.close();
+			
+			return data;
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+			e.getCause();
+		}
+		
+		return null;
+	}
 }
