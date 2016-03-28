@@ -29,7 +29,7 @@ public class FileManager {
 	private static String _STORECHUNK_REPLICATION = "StoreChunkReplication.txt";
 	private static String _FILE_DATA_SEPARATOR = "---";
 
-	private static int _CHUNK_SIZE = 64000;
+	public static int _CHUNK_SIZE = 64000;
 
 	public FileManager(){
 		File dirPostBox = new File(_POSTBOX);

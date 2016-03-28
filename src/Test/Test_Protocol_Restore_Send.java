@@ -24,9 +24,9 @@ public class Test_Protocol_Restore_Send {
 		
 		System.out.println("Sent GetChunk");
 		
-		// param -> string version, string fileid, int chunknum
-		byte[] test = rp.restoreChunk("1.0", "testfile", 15);
-		System.out.println("Received chunk length -> " + test.length);
+		// param -> string filename (not path), string version
+		byte[] fileRestored = rp.restoreFile("fileName", "1.0");
+		System.out.println("Received chunk length -> " + fileRestored.length);
 		
 		System.exit(0);
 	}

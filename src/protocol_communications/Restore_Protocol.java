@@ -2,6 +2,7 @@ package protocol_communications;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -158,5 +159,38 @@ public class Restore_Protocol extends Protocol {
 		}
 
 		return null;
+	}
+
+	public byte[] restoreFile(String fileName, String version){
+		String fileId = null;
+		for(Map.Entry<String, String> entry : fileIdToFileName.entrySet()){
+			if(entry.getValue().equals(fileName)){
+				fileId = entry.getKey();
+				break;
+			}
+		}
+		
+		if(fileId == null) return null;
+		
+		ArrayList<byte[]> dataHolderTemp = new ArrayList<>();
+		int chunkNum = 0;
+		byte[] tempData = null;
+		do{
+			tempData = restoreChunk(version, fileId, chunkNum);
+			if(tempData == null) return null;
+			
+			dataHolderTemp.add(tempData);
+			chunkNum++;
+		}while(tempData.length == FileManager._CHUNK_SIZE);
+		
+		byte[] restoredFile = new byte[0];
+		for(byte[] restoredData : dataHolderTemp){
+			byte[] addDataCopy = restoredFile;
+			restoredFile = new byte[addDataCopy.length + restoredData.length];
+			System.arraycopy(addDataCopy, 0, restoredFile, 0, addDataCopy.length);
+			System.arraycopy(restoredData, 0, restoredFile, addDataCopy.length, restoredData.length);
+		}
+		
+		return restoredFile;
 	}
 }
