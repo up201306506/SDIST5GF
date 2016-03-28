@@ -9,7 +9,7 @@ import java.io.*;
  */
 public class Test_Dummy_Peer {
 	
-	static int _PORT = 2346;
+	static int _PORT = 51111;
 	
 	private static ServerSocket serverSocket;
 	private static Socket clientSocket;
