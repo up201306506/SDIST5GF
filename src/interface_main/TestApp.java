@@ -75,18 +75,24 @@ public class TestApp {
 		// Initialising the TCP Ports
 		//-------------------------
 		
-		try 
+		int connectionRetries = 10;
+		while (connectionRetries > 0)
 		{
-			echoSocket = new Socket(peerAddress, peerPort);
-			peerWrite = new PrintWriter(echoSocket.getOutputStream(), true);
-			peerRead = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
-		} 
-		catch (IOException e) 
-		{
-			System.err.println("Couldn't connect to " + peerAddress);
-			e.printStackTrace();
-			System.exit(-1);
-		}
+			try 
+			{
+				echoSocket = new Socket(peerAddress, peerPort);
+				peerWrite = new PrintWriter(echoSocket.getOutputStream(), true);
+				peerRead = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
+				connectionRetries = 0;
+			} 
+			catch (IOException e) 
+			{
+				System.err.println("Couldn't connect to " + peerAddress + ":" + peerPort);
+				connectionRetries--;
+				if(connectionRetries==0)
+				{e.printStackTrace();System.exit(-1);}
+			}
+		}		
 		System.out.println("Peer found! Sending handshake.");
 		
 
