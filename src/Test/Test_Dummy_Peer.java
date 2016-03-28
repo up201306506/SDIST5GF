@@ -10,7 +10,6 @@ import java.io.*;
 public class Test_Dummy_Peer {
 	
 	static int _PORT = 2346;
-	private Thread responseThread;
 	
 	private static ServerSocket serverSocket;
 	private static Socket clientSocket;
@@ -19,53 +18,98 @@ public class Test_Dummy_Peer {
 	
 	public static void main(String[] args) {
 		
-		//-------------------------
-		// Initialising the TCP Ports
-		//-------------------------
-
-		try {
-			serverSocket = new ServerSocket(_PORT);
-			System.out.println("Waiting for connection (Address: " + InetAddress.getLocalHost().getHostAddress() + " Port: " + _PORT + ")... ... ...");
-			clientSocket = serverSocket.accept();
-			System.out.println("A connection was made to " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
-			clientReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			clientWriter = new PrintWriter(clientSocket.getOutputStream(), true);
-		} catch (NumberFormatException | IOException e) {
-			System.out.println("Error during Setup");
-			e.printStackTrace();
-			System.exit(-1);
-		}           
-		
-		//-------------------------
-		// Waiting for Handshake
-		//-------------------------
-		
-		String message;
-		Boolean handshake = false;
-		try 
+		boolean terminate = false;
+		while(!terminate)
 		{
-			while(!handshake)
+			//-------------------------
+			// Initialising the TCP Ports
+			//-------------------------
+
+			try {
+				serverSocket = new ServerSocket(_PORT);
+				System.out.println("Waiting for connection (Address: " + InetAddress.getLocalHost().getHostAddress() + " Port: " + _PORT + ")... ... ...");
+				clientSocket = serverSocket.accept();
+				System.out.println("A connection was made to " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
+				clientReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+				clientWriter = new PrintWriter(clientSocket.getOutputStream(), true);
+			} catch (NumberFormatException | IOException e) {
+				System.err.println("Error during Setup");
+				e.printStackTrace();
+				System.exit(-1);
+			}          
+			
+			//-------------------------
+			// Waiting for Handshake
+			//-------------------------
+			try 
 			{
-				if(clientReader.ready())
+				String buffer;
+				Boolean handshake = false;
+				while(!handshake)
 				{
-					message = clientReader.readLine();
-					if(message.equals("Distributed Backup Service Interface"))
+					if(clientReader.ready())
 					{
-						clientWriter.println("Distributed Backup Service Peer");
-						handshake = true;
+						buffer = clientReader.readLine();
+						if(buffer.equals("Distributed Backup Service Interface"))
+						{
+							clientWriter.println("Distributed Backup Service Peer");
+							handshake = true;
+						}
+						else //quit inner loop without confirming handshake
+						{
+							clientWriter.println("ERROR");
+							break;
+						}
 					}
 				}
+				if(!handshake)
+				{
+					System.out.println("A client connected but it didn't handshake correctly, reseting...");
+					bail();
+					continue; //Resets main loop
+				}	
+			} catch (IOException e) 
+			{
+				System.err.println("Error during handshake");
+				e.printStackTrace();
+				System.exit(-1);
 			}
 			
-		} catch (IOException e) {e.printStackTrace();System.exit(-1);}
+			
+			//-------------------------
+			// Waiting FILE or RECLAIM command
+			//-------------------------
+						
+			
+			//-------------------------
+			// Terminate
+			//-------------------------
+			
+			bail();
+			terminate = true;
+		}
 		
 		
-		//-------------------------
-		// Waiting for Handshake
-		//-------------------------
+		
+		
 		
 		System.out.println("Test_Dummy_Peer OK!");
 		System.exit(0);
 	}
-
+	
+	
+	/**
+	 * Closes the TCP resources, so the main loop may either reset or terminate
+	 * 
+	 */
+	private static void bail(){
+		try {
+			serverSocket.close();
+			clientSocket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		return;
+	}
 }
