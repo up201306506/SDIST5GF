@@ -1,6 +1,7 @@
 package peer_main;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -13,10 +14,13 @@ import file_utils.FileManager;
 import file_utils.ReplicationValue;
 import file_utils.StoreChunkKey;
 import network_communications.M_Socket;
+import protocol_communications.Backup_Protocol;
+import protocol_communications.Deletion_Protocol;
+import protocol_communications.Removal_Protocol;
+import protocol_communications.Restore_Protocol;
 
 /**
  * Main class for launching a running Peer, and to which an Interface Application should be connected to.
- *
  */
 public class Peer {
 	
@@ -30,6 +34,11 @@ public class Peer {
 	static Map<String, String> fileNames;
 	static Map<StoreChunkKey, ReplicationValue> chunkStored;
 	
+	static Backup_Protocol bp;
+	static Deletion_Protocol dp;
+	static Removal_Protocol rp;
+	static Restore_Protocol tp;
+	
 	public static void main(String[] args) {
 		
 		//-------------------------
@@ -38,7 +47,7 @@ public class Peer {
 		if(args.length != 4)
 		{
 			/*
-			 * Example Args: UniqueID 224.225.226.230:12345 224.225.226.231:12345 224.225.226.232:12345
+			 * Example Args: UniqueID 224.224.224.224:15000 224.224.224.225:15001 224.225.226.232:12345
 			 */
 			
 			System.out.println("Call Error: Wrong number of arguments");
@@ -67,6 +76,10 @@ public class Peer {
 		fileNames = fm.readFileIdToName();
 		chunkStored = fm.readStoreChunkReplicationRegisters();
 		
+		bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb, peerID);
+		dp = new Deletion_Protocol(fm, fileNames, chunkStored, mc, peerID);
+		rp = new Removal_Protocol(fm, fileNames, chunkStored, mc, peerID);
+		tp = new Restore_Protocol(fm, fileNames, chunkStored, mc, mdr, peerID);
 		
 		peerLogic.start();
 		
@@ -90,6 +103,9 @@ public class Peer {
 	
 	
 	
+	/**
+	 * Thread that runs the communication protocol between the Interface Client and the Peer, and then calls the backup service subprotocol methods.
+	 */
 	static Thread peerLogic = new Thread(new Runnable() {
 		
 		public ServerSocket serverSocket;
@@ -160,7 +176,7 @@ public class Peer {
 				//-------------------------
 				boolean skipToReclaim = false;
 				boolean fileexists = false;
-				String[] fileArgs;		
+				String[] fileArgs = null;		
 				try {
 					String buffer;
 					while(true)
@@ -175,10 +191,9 @@ public class Peer {
 								break;
 							}
 
-							/* LOGIC FOR CHECKING IF FILE EXISTS*/
-								// fileArgs[1] - Filepath!
-								fileexists = true; //dummy
-							/* LOGIC FOR CHECKING IF FILE EXISTS*/
+							//Check if it exists in the Peer directory
+							File tempexists = new File(fileArgs[1]);
+							fileexists = tempexists.exists();
 							
 							if (fileexists)
 								clientWriter.println("FILE OK");
@@ -205,7 +220,7 @@ public class Peer {
 				if(!skipToReclaim)
 				{
 					String subProtocolType = null;
-					int replicationDegree;			
+					int replicationDegree = 1;			
 					try {
 						String buffer;
 						
@@ -240,14 +255,7 @@ public class Peer {
 						// * BACKUP
 						//---------------------------
 						
-						boolean backup_success = false;
-						/* LOGIC FOR BACKUP*/
-							//fileArgs[1] - filepath
-							//replicationDegree
-						backup_success = true; //dummy
-						/* LOGIC FOR BACKUP*/
-						
-						if (backup_success)
+						if (bp.backupFile(fileArgs[1], "1.0", replicationDegree))
 							clientWriter.println("BACKUP OK");
 						else
 							clientWriter.println("BACKUP FAIL");

@@ -181,7 +181,7 @@ public class Backup_Protocol extends Protocol {
 				e.printStackTrace();
 				e.getCause();
 			} catch (TimeoutException e) {
-				System.out.println("TIMEOUT");
+				//System.out.println("TIMEOUT");
 
 				numOfTries++;
 				waitInterval = waitInterval * 2;
