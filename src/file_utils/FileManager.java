@@ -134,7 +134,7 @@ public class FileManager {
 	}
 
 	// Read and Write chunk data to txt files
-	public static void writeFileIdToName(String fId, String fileName){
+	public void writeFileIdToName(String fId, String fileName){
 		try {
 			PrintWriter pOut = new PrintWriter(new BufferedWriter(new FileWriter(_FID_TO_NAME, true)));
 			pOut.println(_FILE_DATA_SEPARATOR);
@@ -146,7 +146,7 @@ public class FileManager {
 		}
 	}
 
-	public static void writeFileIdToNameRegisters(Map<String, String> fileIdToName){
+	public void writeFileIdToNameRegisters(Map<String, String> fileIdToName){
 		try {
 			PrintWriter writer = new PrintWriter(_FID_TO_NAME);
 			writer.print("");
@@ -154,26 +154,26 @@ public class FileManager {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		
+
 		Iterator<Entry<String, String>> it = fileIdToName.entrySet().iterator();
-		
+
 		while(it.hasNext()){
 			Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
 			writeFileIdToName(pair.getKey(), pair.getValue());
 		}
 	}
-	
-	public static Map<String, String> readFileIdToName(){
+
+	public Map<String, String> readFileIdToName(){
 		try {
 			new FileOutputStream(_FID_TO_NAME, true).close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		Map<String, String> fIdToName = new HashMap<>();
 		try {
 			BufferedReader bReader = new BufferedReader(new FileReader(_FID_TO_NAME));
-			
+
 			String line = bReader.readLine();
 			while(line != null && !line.equals("")){
 				if(!line.equals(_FILE_DATA_SEPARATOR)) return null;
@@ -182,10 +182,10 @@ public class FileManager {
 
 				if(!fIdToName.containsKey(fId))
 					fIdToName.put(fId, fileName);
-				
+
 				line = bReader.readLine();
 			}
-			
+
 			bReader.close();
 
 		} catch (FileNotFoundException e) {
@@ -193,11 +193,11 @@ public class FileManager {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return fIdToName;
 	}
-	
-	public static void writeStoreChunkReplicationValue(StoreChunkKey storeChunk, ReplicationValue replicationValue){
+
+	public void writeStoreChunkReplicationValue(StoreChunkKey storeChunk, ReplicationValue replicationValue){
 		try {
 			PrintWriter pOut = new PrintWriter(new BufferedWriter(new FileWriter(_STORECHUNK_REPLICATION, true)));
 			pOut.println(_FILE_DATA_SEPARATOR);
@@ -209,7 +209,7 @@ public class FileManager {
 		}
 	}
 
-	public synchronized static void writeStoreChunkReplicationRegisters(Map<StoreChunkKey, ReplicationValue> storeChunkMap){
+	public synchronized void writeStoreChunkReplicationRegisters(Map<StoreChunkKey, ReplicationValue> storeChunkMap){
 		try {
 			PrintWriter writer = new PrintWriter(_STORECHUNK_REPLICATION);
 			writer.print("");
@@ -217,22 +217,22 @@ public class FileManager {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		
+
 		for (Map.Entry<StoreChunkKey, ReplicationValue> entry : storeChunkMap.entrySet())
 			writeStoreChunkReplicationValue(entry.getKey(), entry.getValue());
 	}
 
-	public static Map<StoreChunkKey, ReplicationValue> readStoreChunkReplicationRegisters(){
+	public Map<StoreChunkKey, ReplicationValue> readStoreChunkReplicationRegisters(){
 		try {
 			new FileOutputStream(_STORECHUNK_REPLICATION, true).close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		Map<StoreChunkKey, ReplicationValue> storeChunkReplicationRegisters = new HashMap<>();
 		try {
 			BufferedReader bReader = new BufferedReader(new FileReader(_STORECHUNK_REPLICATION));
-			
+
 			String line = bReader.readLine();
 			while(line != null && !line.equals("")){
 				if(!line.equals(_FILE_DATA_SEPARATOR)) return null;
@@ -244,10 +244,10 @@ public class FileManager {
 
 				if(!storeChunkReplicationRegisters.containsKey(new StoreChunkKey(fId, chunkVersion, chunkNum)))
 					storeChunkReplicationRegisters.put(new StoreChunkKey(fId, chunkVersion, chunkNum), new ReplicationValue(chunkReplicationDegree, chunkReplicationValue));
-				
+
 				line = bReader.readLine();
 			}
-			
+
 			bReader.close();
 
 		} catch (FileNotFoundException e) {
@@ -255,7 +255,7 @@ public class FileManager {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return storeChunkReplicationRegisters;
 	}
 }

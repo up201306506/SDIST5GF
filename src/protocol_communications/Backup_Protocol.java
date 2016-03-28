@@ -148,7 +148,7 @@ public class Backup_Protocol extends Protocol {
 
 					if(chunksStored.containsKey(new StoreChunkKey(chunkStoredFileId, versionStored, numOfChunkStored))){
 						chunksStored.get(new StoreChunkKey(chunkStoredFileId, versionStored, numOfChunkStored)).incrementReplicationValue();
-						FileManager.writeStoreChunkReplicationRegisters(chunksStored);
+						fm.writeStoreChunkReplicationRegisters(chunksStored);
 					}
 				}
 			}
@@ -250,7 +250,7 @@ public class Backup_Protocol extends Protocol {
 		if(fileId != null && fileName != null)
 			if(!fileIdToFileName.containsKey(fileId)){
 				fileIdToFileName.put(fileId, fileName);
-				FileManager.writeFileIdToName(fileId, fileName);
+				fm.writeFileIdToName(fileId, fileName);
 			}
 
 		return true;
