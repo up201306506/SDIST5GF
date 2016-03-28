@@ -16,6 +16,7 @@ import file_utils.ProtocolEnum;
 import file_utils.RandomDelay;
 import file_utils.ReplicationValue;
 import network_communications.M_Socket;
+import sun.management.snmp.util.SnmpNamedListTableCache;
 
 public class Restore_Protocol extends Protocol {
 
@@ -23,10 +24,13 @@ public class Restore_Protocol extends Protocol {
 	private static String _REPLY_HEAD = "CHUNK";
 
 	private Thread receiveGetChunkThread;
+	private volatile boolean _sendingRequest;
 
 	public Restore_Protocol(final FileManager fm, Map<String, String> fIfN, Map<StoreChunkKey, ReplicationValue> cs, final M_Socket mc, final M_Socket mdr) {
 		super(fm, fIfN, cs, mc);
 		this.mdr = mdr;
+		
+		_sendingRequest = false;
 
 		receiveGetChunkThread = new Thread(new Runnable() {
 			public void run() {	
@@ -71,6 +75,39 @@ public class Restore_Protocol extends Protocol {
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
+					
+					boolean sendMessage = true;
+					while(!_sendingRequest){
+						byte[] dataReceivedMDR = mdr.receive(ProtocolEnum.CHUNK);
+						if(dataReceivedMDR == null) break;
+
+						String[] messageReceivedMDR = M_Socket.getMessage(dataReceivedMDR);
+						if(messageReceivedMDR == null || messageReceivedMDR.length != 5) continue;
+
+						// CHUNK
+						if(!messageReceivedMDR[0].equals("CHUNK")) continue;
+
+						// Version of the chunk received
+						String chunkVersionReceivedMDR = messageReceivedMDR[1];
+						if(!chunkVersionReceivedMDR.equals(getChunkVersionReceived)) continue;
+
+						// Id of the CHUNK sender
+						String chunkSenderIdMDR = messageReceivedMDR[2];
+						if(chunkSenderIdMDR.equals(thisSenderId)) continue;
+
+						// Id of the chunk file received
+						String chunkFileIdMDR = messageReceivedMDR[3];
+						if(!chunkFileIdMDR.equals(getChunkFileId)) continue;
+
+						// Num of the chunk file received
+						int numOfChunkReceivedMDR = Integer.parseInt(messageReceivedMDR[4]);
+						if(numOfChunkReceivedMDR != numOfChunkToRestore) continue;
+						
+						sendMessage = false;
+						break;
+					}
+					
+					if(!sendMessage) continue;
 
 					byte[] chunkToSendData = fm.readChunkData(getChunkVersionReceived, getChunkFileId, numOfChunkToRestore);
 
@@ -111,6 +148,8 @@ public class Restore_Protocol extends Protocol {
 			Callable<byte[]> callable = new Callable<byte[]>() {
 				@Override
 				public byte[] call() throws Exception {
+					_sendingRequest = true;
+					
 					while(true){
 						byte[] data = null;
 						do{
@@ -140,7 +179,8 @@ public class Restore_Protocol extends Protocol {
 						if(numOfChunkReceived != chunkNum) continue;
 
 						byte[] chunkData = M_Socket.getChunkData(data);
-
+						
+						_sendingRequest = false;
 						return chunkData;
 					}
 				}
