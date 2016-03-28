@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FileManager {
 
@@ -170,7 +171,7 @@ public class FileManager {
 			e.printStackTrace();
 		}
 
-		Map<String, String> fIdToName = new HashMap<>();
+		Map<String, String> fIdToName = new ConcurrentHashMap<String, String>();
 		try {
 			BufferedReader bReader = new BufferedReader(new FileReader(_FID_TO_NAME));
 
@@ -229,7 +230,7 @@ public class FileManager {
 			e.printStackTrace();
 		}
 
-		Map<StoreChunkKey, ReplicationValue> storeChunkReplicationRegisters = new HashMap<>();
+		Map<StoreChunkKey, ReplicationValue> storeChunkReplicationRegisters = new ConcurrentHashMap<StoreChunkKey, ReplicationValue>();
 		try {
 			BufferedReader bReader = new BufferedReader(new FileReader(_STORECHUNK_REPLICATION));
 
