@@ -20,7 +20,7 @@ public class Test_Protocol_Restore_Send {
 		M_Socket mc = new M_Socket("224.224.224.224", 15000);
 		M_Socket mdr = new M_Socket("224.224.224.226", 15002);
 		
-		Restore_Protocol rp = new Restore_Protocol(fm, fileNames, chunkStored, mc, mdr);
+		Restore_Protocol rp = new Restore_Protocol(fm, fileNames, chunkStored, mc, mdr, "este_pc");
 		
 		System.out.println("Sent GetChunk");
 		

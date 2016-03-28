@@ -21,7 +21,7 @@ public class Test_Protocol_Backup_Receive {
 		M_Socket mc = new M_Socket("224.224.224.224", 15000);
 		M_Socket mdb = new M_Socket("224.224.224.225", 15001);
 		
-		Backup_Protocol bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb);
+		Backup_Protocol bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb, "este_pc");
 		
 		System.out.println("Started receiving...");
 		System.out.println("< press any key to stop executing >");

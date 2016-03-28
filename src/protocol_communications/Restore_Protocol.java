@@ -1,7 +1,5 @@
 package protocol_communications;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -16,7 +14,6 @@ import file_utils.ProtocolEnum;
 import file_utils.RandomDelay;
 import file_utils.ReplicationValue;
 import network_communications.M_Socket;
-import sun.management.snmp.util.SnmpNamedListTableCache;
 
 public class Restore_Protocol extends Protocol {
 
@@ -26,8 +23,8 @@ public class Restore_Protocol extends Protocol {
 	private Thread receiveGetChunkThread;
 	private volatile boolean _sendingRequest;
 
-	public Restore_Protocol(final FileManager fm, Map<String, String> fIfN, Map<StoreChunkKey, ReplicationValue> cs, final M_Socket mc, final M_Socket mdr) {
-		super(fm, fIfN, cs, mc);
+	public Restore_Protocol(final FileManager fm, Map<String, String> fIfN, Map<StoreChunkKey, ReplicationValue> cs, final M_Socket mc, final M_Socket mdr, String peerId) {
+		super(fm, fIfN, cs, mc, peerId);
 		this.mdr = mdr;
 		
 		_sendingRequest = false;
@@ -51,14 +48,7 @@ public class Restore_Protocol extends Protocol {
 
 					// Id of the GETCHUNK sender
 					String getChunkSenderId = message[2];
-					String thisSenderId = null;
-					try{
-						thisSenderId = InetAddress.getLocalHost().getHostName();
-						if(getChunkSenderId.equals(thisSenderId)) continue;
-
-					} catch (UnknownHostException e) {
-						e.printStackTrace();
-					}
+					if(getChunkSenderId.equals(thisPeerId)) continue;
 
 					// Id of the chunk file to restore
 					String getChunkFileId = message[3];
@@ -93,7 +83,7 @@ public class Restore_Protocol extends Protocol {
 
 						// Id of the CHUNK sender
 						String chunkSenderIdMDR = messageReceivedMDR[2];
-						if(chunkSenderIdMDR.equals(thisSenderId)) continue;
+						if(chunkSenderIdMDR.equals(thisPeerId)) continue;
 
 						// Id of the chunk file received
 						String chunkFileIdMDR = messageReceivedMDR[3];
@@ -122,24 +112,16 @@ public class Restore_Protocol extends Protocol {
 
 	// Sending Data
 	public void sendChunk(String version, String fileId, int chunkNum, byte[] data){
-		try{
-			String thisSenderId = InetAddress.getLocalHost().getHostName();
+		
+		String headMessageToSendStr = _REPLY_HEAD + " " + version + " " + thisPeerId + " " + fileId + " " + chunkNum + " " + _CRLF + _CRLF;
+		byte[] messageToSend = M_Socket.joinMessageToChunk(headMessageToSendStr, data);
 
-			String headMessageToSendStr = _REPLY_HEAD + " " + version + " " + thisSenderId + " " + fileId + " " + chunkNum + " " + _CRLF + _CRLF;
-			byte[] messageToSend = M_Socket.joinMessageToChunk(headMessageToSendStr, data);
-
-			mdr.send(messageToSend);
-
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
+		mdr.send(messageToSend);
 	}
 
 	public byte[] restoreChunk(final String version, final String fileId, final int chunkNum){
 		try{
-			final String thisSenderId = InetAddress.getLocalHost().getHostName();
-
-			String headMessageToSendStr = _HEAD + " " + version + " " + thisSenderId + " " + fileId + " " + chunkNum + " " + _CRLF + _CRLF;
+			String headMessageToSendStr = _HEAD + " " + version + " " + thisPeerId + " " + fileId + " " + chunkNum + " " + _CRLF + _CRLF;
 			byte[] messageToSend = headMessageToSendStr.getBytes();
 
 			mc.send(messageToSend);
@@ -168,7 +150,7 @@ public class Restore_Protocol extends Protocol {
 
 						// Id of the CHUNK sender
 						String chunkSenderId = message[2];
-						if(chunkSenderId.equals(thisSenderId)) continue;
+						if(chunkSenderId.equals(thisPeerId)) continue;
 
 						// Id of the chunk file received
 						String chunkFileId = message[3];
@@ -190,8 +172,6 @@ public class Restore_Protocol extends Protocol {
 
 			return future.get();
 
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (ExecutionException e) {
