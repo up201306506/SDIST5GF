@@ -52,7 +52,7 @@ public class FileManager {
 	}
 
 	public void writeInStoreFolderFile(String fileId, int chunkNum, byte[] data){
-		String filePath = storeFolder(fileId) + fileId + "-" + String.format("%05d", chunkNum);
+		String filePath = storeFolder(fileId) + fileId + "-" + String.format("%06d", chunkNum);
 		try {
 			FileOutputStream fos = new FileOutputStream(filePath);
 			if(data != null) fos.write(data);
@@ -131,6 +131,26 @@ public class FileManager {
 		}
 
 		return result;
+	}
+
+	private void deleteDir(File folder){
+		File[] files = folder.listFiles();
+
+		if(files != null){
+			for(File file : files){
+				if(file.isDirectory())
+					deleteDir(file);
+				else
+					file.delete();
+			}
+		}
+
+		folder.delete();
+	}
+
+	public void deleteFolder(String fileId){
+		String filesDir = _STORAGE + File.separator + fileId;
+		deleteDir(new File(filesDir));
 	}
 
 	// Read and Write chunk data to txt files
@@ -260,24 +280,24 @@ public class FileManager {
 	}
 
 	public byte[] readChunkData(String chunkVersion, String chunkFileId, int numOfChunk) {
-		String chunkFilePath = _STORAGE + File.separator + chunkFileId + File.separator + chunkFileId + "-" + String.format("%05d", numOfChunk);
-		
+		String chunkFilePath = _STORAGE + File.separator + chunkFileId + File.separator + chunkFileId + "-" + String.format("%06d", numOfChunk);
+
 		try {
 			File chunkFile = new File(chunkFilePath);
 			FileInputStream fis = new FileInputStream(chunkFile);
-			
+
 			byte[] data = new byte[(int) chunkFile.length()];
 			fis.read(data);
-			
+
 			fis.close();
-			
+
 			return data;
-			
+
 		} catch (IOException e) {
 			e.printStackTrace();
 			e.getCause();
 		}
-		
+
 		return null;
 	}
 }

@@ -181,7 +181,7 @@ public class Restore_Protocol extends Protocol {
 		return null;
 	}
 
-	public byte[] restoreFile(String fileName, String version){
+	public boolean restoreFile(String fileName, String version){
 		String fileId = null;
 		for(Map.Entry<String, String> entry : fileIdToFileName.entrySet()){
 			if(entry.getValue().equals(fileName)){
@@ -190,27 +190,22 @@ public class Restore_Protocol extends Protocol {
 			}
 		}
 		
-		if(fileId == null) return null;
+		if(fileId == null) return false;
 		
-		ArrayList<byte[]> dataHolderTemp = new ArrayList<>();
 		int chunkNum = 0;
 		byte[] tempData = null;
 		do{
 			tempData = restoreChunk(version, fileId, chunkNum);
-			if(tempData == null) return null;
+			if(tempData == null) return false;
 			
-			dataHolderTemp.add(tempData);
+			fm.writeInStoreFolderFile(fileId, chunkNum, tempData);
 			chunkNum++;
 		}while(tempData.length == FileManager._CHUNK_SIZE);
 		
-		byte[] restoredFile = new byte[0];
-		for(byte[] restoredData : dataHolderTemp){
-			byte[] addDataCopy = restoredFile;
-			restoredFile = new byte[addDataCopy.length + restoredData.length];
-			System.arraycopy(addDataCopy, 0, restoredFile, 0, addDataCopy.length);
-			System.arraycopy(restoredData, 0, restoredFile, addDataCopy.length, restoredData.length);
-		}
+		if(!fm.uniteFile(fileId, fileName)) return false;
 		
-		return restoredFile;
+		fm.deleteFolder(fileId);
+		
+		return true;
 	}
 }
