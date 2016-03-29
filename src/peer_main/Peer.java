@@ -24,7 +24,9 @@ import protocol_communications.Restore_Protocol;
  */
 public class Peer {
 	
-	static int tcpPort;
+	public static long maxDiskSpace = Long.parseLong("2000000000"); // 2 Gb
+	
+	public static int tcpPort;
 	
 	public static M_Socket mc;
 	public static M_Socket mdb; 

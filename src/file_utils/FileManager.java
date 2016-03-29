@@ -20,9 +20,14 @@ import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
+import peer_main.Peer;
+
 public class FileManager {
-	
+
 	private String _thisPeerId;
+
+	private static String _METADATA;
+	private long freeDiskSpace;
 
 	private static String _POSTBOX;
 	private static String _STORAGE;
@@ -34,7 +39,8 @@ public class FileManager {
 
 	public FileManager(String peerId){
 		_thisPeerId = peerId;
-		
+
+		_METADATA = _thisPeerId + File.separator + "metadata.txt";
 		_POSTBOX = _thisPeerId + File.separator + "PostBox";
 		_STORAGE = _thisPeerId + File.separator + "ChunkStorage";
 		_FID_TO_NAME = _thisPeerId + File.separator + "FIdNames.txt";
@@ -44,7 +50,26 @@ public class FileManager {
 		if(!dirPeer.exists()){
 			dirPeer.mkdir();
 		}
-		
+
+		try{
+			File metadataFile = new File(_METADATA);
+			if(!metadataFile.exists()) {
+				metadataFile.createNewFile();
+				FileOutputStream metaOutFile = new FileOutputStream(metadataFile);
+				metaOutFile.write(("" + Peer.maxDiskSpace).getBytes());
+				metaOutFile.close();
+				freeDiskSpace = Peer.maxDiskSpace;
+			}else{
+				FileInputStream metaInFile = new FileInputStream(metadataFile);
+				byte[] data = new byte[(int) metadataFile.length()];
+				metaInFile.read(data);
+				freeDiskSpace = Long.parseLong(new String(data));
+				metaInFile.close();
+			}
+		}catch (IOException e){
+			e.printStackTrace();
+		}
+
 		File dirPostBox = new File(_POSTBOX);
 		if(!dirPostBox.exists()){
 			dirPostBox.mkdir();
@@ -56,6 +81,27 @@ public class FileManager {
 		}
 	}
 
+	public long getFreeDiskSpace(){
+		return freeDiskSpace;
+	}
+	
+	public boolean setFreeDiskSpace(long newDiskSpace){
+		if(newDiskSpace <= Peer.maxDiskSpace)
+			freeDiskSpace = newDiskSpace;
+		else
+			return false;
+		
+		try {
+			PrintWriter writer = new PrintWriter(_METADATA);
+			writer.print(freeDiskSpace);
+			writer.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		return true;
+	}
+	
 	public String storeFolder(String fileId){
 		File chunkFolder = new File(_STORAGE + File.separator + fileId);
 		if(!chunkFolder.exists()){
@@ -162,9 +208,24 @@ public class FileManager {
 		folder.delete();
 	}
 
-	public void deleteFolder(String fileId){
+	private long folderSize(File folder){
+		long length = 0;
+		for(File file : folder.listFiles()){
+			if(file.isFile())
+				length += file.length();
+			else
+				length += folderSize(file);
+		}
+		return length;
+	}
+	
+	public long deleteFolder(String fileId){
 		String filesDir = _STORAGE + File.separator + fileId;
-		deleteDir(new File(filesDir));
+		File chunkFolder = new File(filesDir);
+		
+		long dirSize = folderSize(chunkFolder);
+		deleteDir(chunkFolder);
+		return dirSize;
 	}
 
 	// Read and Write chunk data to txt files
