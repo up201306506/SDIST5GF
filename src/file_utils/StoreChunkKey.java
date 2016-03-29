@@ -19,6 +19,10 @@ public class StoreChunkKey {
 		version = v;
 	}
 	
+	public String getId(){
+		return fileId;
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if(!(obj instanceof StoreChunkKey)){

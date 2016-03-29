@@ -19,8 +19,10 @@ public abstract class Protocol {
 	public M_Socket mdb;
 
 	public FileManager fm;
+	
+	public String thisPeerId;
 
-	public Protocol(FileManager fm, Map<String, String> fIfN, Map<StoreChunkKey, ReplicationValue> cs, M_Socket mc){
+	public Protocol(FileManager fm, Map<String, String> fIfN, Map<StoreChunkKey, ReplicationValue> cs, M_Socket mc, String peerId){
 		this.fm = fm;
 		fileIdToFileName = fIfN;
 		chunksStored = cs;
@@ -31,5 +33,7 @@ public abstract class Protocol {
 		_CRLF = new String(crlfArray);
 
 		this.mc = mc;
+		
+		thisPeerId = peerId;
 	}
 }

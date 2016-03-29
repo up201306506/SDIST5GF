@@ -14,23 +14,62 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
+import java.util.concurrent.ConcurrentHashMap;
+
+import peer_main.Peer;
 
 public class FileManager {
 
-	private static String _POSTBOX = "PostBox";
-	private static String _STORAGE = "ChunkStorage";
-	private static String _FID_TO_NAME = "FIdNames.txt";
-	private static String _STORECHUNK_REPLICATION = "StoreChunkReplication.txt";
+	private String _thisPeerId;
+
+	private static String _METADATA;
+	private long freeDiskSpace;
+
+	private static String _POSTBOX;
+	private static String _STORAGE;
+	private static String _FID_TO_NAME;
+	private static String _STORECHUNK_REPLICATION;
 	private static String _FILE_DATA_SEPARATOR = "---";
 
-	private static int _CHUNK_SIZE = 64000;
+	public static int _CHUNK_SIZE = 64000;
 
-	public FileManager(){
+	public FileManager(String peerId){
+		_thisPeerId = peerId;
+
+		_METADATA = _thisPeerId + File.separator + "metadata.txt";
+		_POSTBOX = _thisPeerId + File.separator + "PostBox";
+		_STORAGE = _thisPeerId + File.separator + "ChunkStorage";
+		_FID_TO_NAME = _thisPeerId + File.separator + "FIdNames.txt";
+		_STORECHUNK_REPLICATION = _thisPeerId + File.separator + "StoreChunkReplication.txt";
+		
+		File dirPeer = new File(_thisPeerId);
+		if(!dirPeer.exists()){
+			dirPeer.mkdir();
+		}
+
+		try{
+			File metadataFile = new File(_METADATA);
+			if(!metadataFile.exists()) {
+				metadataFile.createNewFile();
+				FileOutputStream metaOutFile = new FileOutputStream(metadataFile);
+				metaOutFile.write(("" + Peer.maxDiskSpace).getBytes());
+				metaOutFile.close();
+				freeDiskSpace = Peer.maxDiskSpace;
+			}else{
+				FileInputStream metaInFile = new FileInputStream(metadataFile);
+				byte[] data = new byte[(int) metadataFile.length()];
+				metaInFile.read(data);
+				freeDiskSpace = Long.parseLong(new String(data));
+				metaInFile.close();
+			}
+		}catch (IOException e){
+			e.printStackTrace();
+		}
+
 		File dirPostBox = new File(_POSTBOX);
 		if(!dirPostBox.exists()){
 			dirPostBox.mkdir();
@@ -42,6 +81,27 @@ public class FileManager {
 		}
 	}
 
+	public long getFreeDiskSpace(){
+		return freeDiskSpace;
+	}
+	
+	public boolean setFreeDiskSpace(long newDiskSpace){
+		if(newDiskSpace <= Peer.maxDiskSpace)
+			freeDiskSpace = newDiskSpace;
+		else
+			return false;
+		
+		try {
+			PrintWriter writer = new PrintWriter(_METADATA);
+			writer.print(freeDiskSpace);
+			writer.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		return true;
+	}
+	
 	public String storeFolder(String fileId){
 		File chunkFolder = new File(_STORAGE + File.separator + fileId);
 		if(!chunkFolder.exists()){
@@ -52,7 +112,7 @@ public class FileManager {
 	}
 
 	public void writeInStoreFolderFile(String fileId, int chunkNum, byte[] data){
-		String filePath = storeFolder(fileId) + fileId + "-" + String.format("%05d", chunkNum);
+		String filePath = storeFolder(fileId) + fileId + "-" + String.format("%06d", chunkNum);
 		try {
 			FileOutputStream fos = new FileOutputStream(filePath);
 			if(data != null) fos.write(data);
@@ -133,6 +193,41 @@ public class FileManager {
 		return result;
 	}
 
+	private void deleteDir(File folder){
+		File[] files = folder.listFiles();
+
+		if(files != null){
+			for(File file : files){
+				if(file.isDirectory())
+					deleteDir(file);
+				else
+					file.delete();
+			}
+		}
+
+		folder.delete();
+	}
+
+	private long folderSize(File folder){
+		long length = 0;
+		for(File file : folder.listFiles()){
+			if(file.isFile())
+				length += file.length();
+			else
+				length += folderSize(file);
+		}
+		return length;
+	}
+	
+	public long deleteFolder(String fileId){
+		String filesDir = _STORAGE + File.separator + fileId;
+		File chunkFolder = new File(filesDir);
+		
+		long dirSize = folderSize(chunkFolder);
+		deleteDir(chunkFolder);
+		return dirSize;
+	}
+
 	// Read and Write chunk data to txt files
 	public void writeFileIdToName(String fId, String fileName){
 		try {
@@ -170,7 +265,7 @@ public class FileManager {
 			e.printStackTrace();
 		}
 
-		Map<String, String> fIdToName = new HashMap<>();
+		Map<String, String> fIdToName = new ConcurrentHashMap<String, String>();
 		try {
 			BufferedReader bReader = new BufferedReader(new FileReader(_FID_TO_NAME));
 
@@ -229,7 +324,7 @@ public class FileManager {
 			e.printStackTrace();
 		}
 
-		Map<StoreChunkKey, ReplicationValue> storeChunkReplicationRegisters = new HashMap<>();
+		Map<StoreChunkKey, ReplicationValue> storeChunkReplicationRegisters = new ConcurrentHashMap<StoreChunkKey, ReplicationValue>();
 		try {
 			BufferedReader bReader = new BufferedReader(new FileReader(_STORECHUNK_REPLICATION));
 
@@ -257,5 +352,27 @@ public class FileManager {
 		}
 
 		return storeChunkReplicationRegisters;
+	}
+
+	public byte[] readChunkData(String chunkVersion, String chunkFileId, int numOfChunk) {
+		String chunkFilePath = _STORAGE + File.separator + chunkFileId + File.separator + chunkFileId + "-" + String.format("%06d", numOfChunk);
+
+		try {
+			File chunkFile = new File(chunkFilePath);
+			FileInputStream fis = new FileInputStream(chunkFile);
+
+			byte[] data = new byte[(int) chunkFile.length()];
+			fis.read(data);
+
+			fis.close();
+
+			return data;
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			e.getCause();
+		}
+
+		return null;
 	}
 }

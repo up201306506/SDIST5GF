@@ -140,7 +140,7 @@ public class TestApp {
 		System.out.println(args[1] + " command sent");
 		if (!sendMessageWaitResponse(message, response, peerRead, peerWrite))
 		{
-			System.out.println("The " + args[1] + " command was unsuccesful on the peer's end");
+			System.err.println("The " + args[1] + " command was unsuccesful on the peer's end");
 			try {echoSocket.close();} 
 				catch (IOException e) {e.printStackTrace();}
 			System.exit(-1);
