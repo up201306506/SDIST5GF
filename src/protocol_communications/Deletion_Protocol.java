@@ -64,6 +64,8 @@ public class Deletion_Protocol extends Protocol {
 	// Sending Data
 	public boolean sendDeletionChunk(String fileName, String version){
 		
+		fm.writeStoreChunkReplicationRegisters(chunksStored);
+		
 		String fileId = null;
 		for(Map.Entry<String, String> entry : fileIdToFileName.entrySet()){
 			if(entry.getValue().equals(fileName)){
@@ -73,6 +75,16 @@ public class Deletion_Protocol extends Protocol {
 		}
 		
 		if(fileId == null) return false;
+		
+		boolean chunkExists = false;
+		for(Map.Entry<StoreChunkKey, ReplicationValue> entry : chunksStored.entrySet()){
+			if(entry.getKey().getId().equals(fileId) && entry.getKey().getVersion().equals(version)){
+				chunksStored.remove(entry.getKey()); // May throw ConcurrentModificationException							
+				chunkExists = true;
+			}
+		}
+		
+		if(!chunkExists) return false;
 		
 		String headMessageToSendStr = _HEAD + " " + version + " " + thisPeerId + " " + fileId + " " + _CRLF + _CRLF;
 		byte[] messageToSend = headMessageToSendStr.getBytes();
