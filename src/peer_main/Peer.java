@@ -16,7 +16,7 @@ import file_utils.StoreChunkKey;
 import network_communications.M_Socket;
 import protocol_communications.Backup_Protocol;
 import protocol_communications.Deletion_Protocol;
-import protocol_communications.Removal_Protocol;
+import protocol_communications.Reclaim_Protocol;
 import protocol_communications.Restore_Protocol;
 
 /**
@@ -36,7 +36,7 @@ public class Peer {
 	
 	static Backup_Protocol bp;
 	static Deletion_Protocol dp;
-	static Removal_Protocol rp;
+	static Reclaim_Protocol rp;
 	static Restore_Protocol tp;
 	
 	public static void main(String[] args) {
@@ -78,7 +78,7 @@ public class Peer {
 		
 		bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb, peerID);
 		dp = new Deletion_Protocol(fm, fileNames, chunkStored, mc, peerID);
-		rp = new Removal_Protocol(fm, fileNames, chunkStored, mc, peerID);
+		rp = new Reclaim_Protocol(fm, fileNames, chunkStored, mc, peerID);
 		tp = new Restore_Protocol(fm, fileNames, chunkStored, mc, mdr, peerID);
 		
 		peerLogic.start();

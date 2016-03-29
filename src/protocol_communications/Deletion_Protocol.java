@@ -62,9 +62,22 @@ public class Deletion_Protocol extends Protocol {
 	}
 
 	// Sending Data
-	public void sendDeletionChunk(String version, String fileId){
+	public boolean sendDeletionChunk(String fileName, String version){
+		
+		String fileId = null;
+		for(Map.Entry<String, String> entry : fileIdToFileName.entrySet()){
+			if(entry.getValue().equals(fileName)){
+				fileId = entry.getKey();
+				break;
+			}
+		}
+		
+		if(fileId == null) return false;
+		
 		String headMessageToSendStr = _HEAD + " " + version + " " + thisPeerId + " " + fileId + " " + _CRLF + _CRLF;
 		byte[] messageToSend = headMessageToSendStr.getBytes();
 		mc.send(messageToSend);
+		
+		return true;
 	}
 }

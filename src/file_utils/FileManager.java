@@ -21,16 +21,25 @@ import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FileManager {
+	
+	private String _thisPeerId;
 
-	private static String _POSTBOX = "PostBox";
-	private static String _STORAGE = "ChunkStorage";
-	private static String _FID_TO_NAME = "FIdNames.txt";
-	private static String _STORECHUNK_REPLICATION = "StoreChunkReplication.txt";
+	private static String _POSTBOX;
+	private static String _STORAGE;
+	private static String _FID_TO_NAME;
+	private static String _STORECHUNK_REPLICATION;
 	private static String _FILE_DATA_SEPARATOR = "---";
 
 	public static int _CHUNK_SIZE = 64000;
 
-	public FileManager(){
+	public FileManager(String peerId){
+		_thisPeerId = peerId;
+		
+		_POSTBOX = _thisPeerId + File.separator + "PostBox";
+		_STORAGE = _thisPeerId + File.separator + "ChunkStorage";
+		_FID_TO_NAME = _thisPeerId + File.separator + "FIdNames.txt";
+		_STORECHUNK_REPLICATION = _thisPeerId + File.separator + "StoreChunkReplication.txt";
+		
 		File dirPostBox = new File(_POSTBOX);
 		if(!dirPostBox.exists()){
 			dirPostBox.mkdir();
