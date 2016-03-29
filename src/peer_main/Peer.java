@@ -24,6 +24,8 @@ import protocol_communications.Restore_Protocol;
  */
 public class Peer {
 	
+	static int tcpPort;
+	
 	public static M_Socket mc;
 	public static M_Socket mdb; 
 	public static M_Socket mdr; 
@@ -44,15 +46,16 @@ public class Peer {
 		//-------------------------
 		// Checking Arguments
 		//-------------------------
-		if(args.length != 4)
+		if(args.length != 5)
 		{
 			/*
-			 * Example Args: UniqueID 224.224.224.224:15000 224.224.224.225:15001 224.225.226.232:12345
+			 * Example Args: UniqueID 50123 224.224.224.224:15000 224.224.224.225:15001 224.225.226.232:12345
 			 */
 			
 			System.out.println("Call Error: Wrong number of arguments");
 			System.out.println("----------------------------");
-			System.out.println("Usage: java Peer <PeerID> <mcIP>:<mcPORT> <mdbIP>:<mdbPORT> <mdrIP>:<mdrPORT>");
+			System.out.println("Usage: java Peer <PeerID> <TCPport> <mcIP>:<mcPORT> <mdbIP>:<mdbPORT> <mdrIP>:<mdrPORT>");
+			System.out.println("<TCPport> - Port on which the TestApp should connect to (leave as 0 for random ports)");
 			System.out.println("<PeerID> - name by which this ID is recognized, should be unique");
 			System.out.println("<IP>:<PORT> - Multicast channel addresses for MC, MDB and MDR");
 			System.exit(1);
@@ -64,9 +67,11 @@ public class Peer {
 		
 		peerID = args[0];
 		
-		String[] MCArgs = args[1].split(":");
-		String[] MDBArgs = args[2].split(":");
-		String[] MDRArgs = args[3].split(":");
+		tcpPort = Integer.parseInt(args[1]);
+		
+		String[] MCArgs = args[2].split(":");
+		String[] MDBArgs = args[3].split(":");
+		String[] MDRArgs = args[4].split(":");
 		mc = new M_Socket(MCArgs[0], Integer.parseInt(MCArgs[1]));
 		mdb = new M_Socket(MDBArgs[0], Integer.parseInt(MDBArgs[1]));
 		mdr = new M_Socket(MDRArgs[0], Integer.parseInt(MDRArgs[1]));
@@ -123,7 +128,7 @@ public class Peer {
 				// Initialising the TCP Ports
 				//-------------------------
 				try {
-					serverSocket = new ServerSocket(0);
+					serverSocket = new ServerSocket(tcpPort);
 					System.out.println("Waiting for connection (Address: " + InetAddress.getLocalHost().getHostAddress() + " Port: " + serverSocket.getLocalPort() + ")... ... ...");
 					clientSocket = serverSocket.accept();
 					System.out.println("A connection was made to " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
@@ -175,6 +180,7 @@ public class Peer {
 				// Waiting FILE or RECLAIM command
 				//-------------------------
 				boolean skipToReclaim = false;
+				String filepath = null;
 				boolean fileexists = false;
 				String[] fileArgs = null;		
 				try {
@@ -192,7 +198,8 @@ public class Peer {
 							}
 
 							//Check if it exists in the Peer directory
-							File tempexists = new File(fileArgs[1]);
+							filepath = fileArgs[1];
+							File tempexists = new File(filepath);
 							fileexists = tempexists.exists();
 							
 							if (fileexists)
@@ -204,7 +211,7 @@ public class Peer {
 					}
 					if(!fileexists && !skipToReclaim)
 					{
-						System.out.println("Filepath: " + fileArgs[1]);
+						System.out.println("Filepath: " + filepath);
 						System.out.println("The client asked for a a file this peer doesn't recognize, reseting...");
 						bail();
 						continue; //Resets main loop
@@ -255,7 +262,7 @@ public class Peer {
 						// * BACKUP
 						//---------------------------
 						
-						if (bp.backupFile(fileArgs[1], "1.0", replicationDegree))
+						if (bp.backupFile(filepath, "1.0", replicationDegree))
 							clientWriter.println("BACKUP OK");
 						else
 							clientWriter.println("BACKUP FAIL");
@@ -266,13 +273,7 @@ public class Peer {
 						// * RESTORE
 						//---------------------------
 
-						boolean restore_success = false;
-						/* LOGIC FOR RESTORE*/
-							//fileArgs[1] - filepath
-						restore_success = true; //dummy
-						/* LOGIC FOR RESTORE*/
-						
-						if (restore_success)
+						if (tp.restoreFile(filepath, "1.0"))
 							clientWriter.println("RESTORE OK");
 						else
 							clientWriter.println("RESTORE FAIL");
@@ -284,13 +285,7 @@ public class Peer {
 						// * DELETE
 						//---------------------------
 						
-						boolean delete_success = false;
-						/* LOGIC FOR DELETE*/
-							//fileArgs[1] - filepath
-						delete_success = true; //dummy
-						/* LOGIC FOR DELETE*/
-						
-						if (delete_success)
+						if (dp.sendDeletionChunk(filepath, "1.0"))
 							clientWriter.println("DELETE OK");
 						else
 							clientWriter.println("DELETE FAIL");
@@ -314,7 +309,7 @@ public class Peer {
 						// fileArgs[1] - Restore Amount.
 						reclaim_success = true; //dummy
 					/* LOGIC FOR RECLAIMING*/
-					
+						
 					if (reclaim_success)
 						clientWriter.println("RECLAIM OK");
 					else
