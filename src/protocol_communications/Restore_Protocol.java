@@ -1,6 +1,5 @@
 package protocol_communications;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
