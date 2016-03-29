@@ -83,13 +83,15 @@ public class Backup_Protocol extends Protocol {
 
 					// Replication degree of the chunk to store
 					int chunkReplicationDegree = Integer.parseInt(message[5]);
+					
+					byte[] chunkData = M_Socket.getChunkData(data);
+					if(fm.getFreeDiskSpace() < chunkData.length) continue;
 
 					// Register the new received chunk
 					chunksStored.put(new StoreChunkKey(chunkFileId, chunkVersionReceived, numOfChunkToStore), new ReplicationValue(chunkReplicationDegree, 1));
 
-					byte[] chunkData = M_Socket.getChunkData(data);
-
 					fm.writeInStoreFolderFile(chunkFileId, numOfChunkToStore, chunkData);
+					fm.setFreeDiskSpace(fm.getFreeDiskSpace() - chunkData.length);
 
 					try {
 						Thread.sleep(RandomDelay.randomInt(0, 400));

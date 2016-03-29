@@ -53,7 +53,8 @@ public class Deletion_Protocol extends Protocol {
 					if(!chunkExists) continue;
 					
 					fm.writeStoreChunkReplicationRegisters(chunksStored);
-					fm.deleteFolder(chunkFileId);
+					long spaceDeleted = fm.deleteFolder(chunkFileId);
+					fm.setFreeDiskSpace(fm.getFreeDiskSpace() + spaceDeleted);
 				}
 			}
 		});
@@ -86,10 +87,21 @@ public class Deletion_Protocol extends Protocol {
 		
 		if(!chunkExists) return false;
 		
+		chunkExists = false;
+		for(Map.Entry<String, String> entry : fileIdToFileName.entrySet()){
+			if(entry.getKey().equals(fileId) && entry.getValue().equals(fileName)){
+				chunkExists = true;
+				break;
+			}
+		}
+		
+		if(!chunkExists) return false;
+		
 		fm.writeStoreChunkReplicationRegisters(chunksStored);
 		
 		String headMessageToSendStr = _HEAD + " " + version + " " + thisPeerId + " " + fileId + " " + _CRLF + _CRLF;
 		byte[] messageToSend = headMessageToSendStr.getBytes();
+		
 		mc.send(messageToSend);
 		
 		return true;
