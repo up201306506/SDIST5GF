@@ -12,15 +12,17 @@ import protocol_communications.Deletion_Protocol;
 public class Test_Protocol_Deletion_Receive {
 
 	public static void main(String[] args) {
+		
+		String thisPeerId = "este_pc";
 
-		FileManager fm = new FileManager();
+		FileManager fm = new FileManager(thisPeerId);
 
 		Map<String, String> fileNames = fm.readFileIdToName();
 		Map<StoreChunkKey, ReplicationValue> chunkStored = fm.readStoreChunkReplicationRegisters();
 
 		M_Socket mc = new M_Socket("224.224.224.224", 15000);
 
-		Deletion_Protocol dp = new Deletion_Protocol(fm, fileNames, chunkStored, mc, "este_pc");
+		Deletion_Protocol dp = new Deletion_Protocol(fm, fileNames, chunkStored, mc, thisPeerId);
 
 		System.out.println("Started receiving...");
 		System.out.println("< press any key to stop executing >");

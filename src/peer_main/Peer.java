@@ -72,7 +72,7 @@ public class Peer {
 		mdr = new M_Socket(MDRArgs[0], Integer.parseInt(MDRArgs[1]));
 		
 		
-		fm = new FileManager();
+		fm = new FileManager(peerID);
 		fileNames = fm.readFileIdToName();
 		chunkStored = fm.readStoreChunkReplicationRegisters();
 		

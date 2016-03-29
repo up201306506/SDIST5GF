@@ -13,7 +13,9 @@ public class Proj {
 
 	public static void main(String[] args) {
 		
-		FileManager fm = new FileManager();
+		String thisPeerId = "este_pc";
+		
+		FileManager fm = new FileManager(thisPeerId);
 		
 		// FileId -> FileName
 		Map<String, String> fileNames = fm.readFileIdToName();
@@ -23,7 +25,7 @@ public class Proj {
 		M_Socket mc = new M_Socket("224.225.226.227", 12345);
 		M_Socket mdb = new M_Socket("224.225.226.228", 12346);
 		
-		Backup_Protocol bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb, "este_pc");
+		Backup_Protocol bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb, thisPeerId);
 		
 		// Closing execution functions
 		fm.writeFileIdToNameRegisters(fileNames);

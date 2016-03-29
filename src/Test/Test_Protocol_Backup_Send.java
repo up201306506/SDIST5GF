@@ -12,7 +12,9 @@ public class Test_Protocol_Backup_Send {
 	
 	public static void main(String[] args) {
 		
-		FileManager fm = new FileManager();
+		String thisPeerId = "este_pc";
+		
+		FileManager fm = new FileManager(thisPeerId);
 		
 		Map<String, String> fileNames = fm.readFileIdToName();
 		Map<StoreChunkKey, ReplicationValue> chunkStored = fm.readStoreChunkReplicationRegisters();
@@ -20,7 +22,7 @@ public class Test_Protocol_Backup_Send {
 		M_Socket mc = new M_Socket("224.224.224.224", 15000);
 		M_Socket mdb = new M_Socket("224.224.224.225", 15001);
 		
-		Backup_Protocol bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb, "este_pc");
+		Backup_Protocol bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb, thisPeerId);
 		
 		bp.backupFile("PostBox/a.png", "3.0", 1);
 		
