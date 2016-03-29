@@ -40,6 +40,11 @@ public class FileManager {
 		_FID_TO_NAME = _thisPeerId + File.separator + "FIdNames.txt";
 		_STORECHUNK_REPLICATION = _thisPeerId + File.separator + "StoreChunkReplication.txt";
 		
+		File dirPeer = new File(_thisPeerId);
+		if(!dirPeer.exists()){
+			dirPeer.mkdir();
+		}
+		
 		File dirPostBox = new File(_POSTBOX);
 		if(!dirPostBox.exists()){
 			dirPostBox.mkdir();
