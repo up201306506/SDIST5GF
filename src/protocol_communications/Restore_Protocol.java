@@ -6,6 +6,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import file_utils.StoreChunkKey;
 import file_utils.FileManager;
@@ -18,6 +20,9 @@ public class Restore_Protocol extends Protocol {
 
 	private static String _HEAD = "GETCHUNK";
 	private static String _REPLY_HEAD = "CHUNK";
+	
+	private static int _MAX_NUMBER_OF_RETRIES = 5;
+	private static int _INITIAL_REPLY_WAIT_TIME = 1; // seconds
 
 	private Thread receiveGetChunkThread;
 	private volatile boolean _sendingRequest;
@@ -119,65 +124,81 @@ public class Restore_Protocol extends Protocol {
 	}
 
 	public byte[] restoreChunk(final String version, final String fileId, final int chunkNum){
-		try{
-			String headMessageToSendStr = _HEAD + " " + version + " " + thisPeerId + " " + fileId + " " + chunkNum + " " + _CRLF + _CRLF;
-			byte[] messageToSend = headMessageToSendStr.getBytes();
+		
+		int numOfTries = 1;
+		int waitInterval = _INITIAL_REPLY_WAIT_TIME;
+		boolean restoreComplete = false;
+		
+		String headMessageToSendStr = _HEAD + " " + version + " " + thisPeerId + " " + fileId + " " + chunkNum + " " + _CRLF + _CRLF;
+		byte[] messageToSend = headMessageToSendStr.getBytes();
+
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		Callable<byte[]> callable = new Callable<byte[]>() {
+			@Override
+			public byte[] call() throws Exception {
+				_sendingRequest = true;
+				
+				while(true){
+					byte[] data = null;
+					do{
+						data = mdr.receive(ProtocolEnum.CHUNK);
+					}while(data == null);
+
+					String[] message = M_Socket.getMessage(data);
+					if(message == null || message.length != 5) continue;
+
+					// CHUNK
+					if(!message[0].equals("CHUNK")) continue;
+
+					// Version of the chunk received
+					String chunkVersionReceived = message[1];
+					if(!chunkVersionReceived.equals(version)) continue;
+
+					// Id of the CHUNK sender
+					String chunkSenderId = message[2];
+					if(chunkSenderId.equals(thisPeerId)) continue;
+
+					// Id of the chunk file received
+					String chunkFileId = message[3];
+					if(!chunkFileId.equals(fileId)) continue;
+
+					// Num of the chunk file received
+					int numOfChunkReceived = Integer.parseInt(message[4]);
+					if(numOfChunkReceived != chunkNum) continue;
+
+					byte[] chunkData = M_Socket.getChunkData(data);
+					
+					_sendingRequest = false;
+					return chunkData;
+				}
+			}
+		};
+
+		byte[] restoreReceived = null;
+		
+		while(( numOfTries <= _MAX_NUMBER_OF_RETRIES ) && !restoreComplete){
 
 			mc.send(messageToSend);
 
-			ExecutorService executor = Executors.newSingleThreadExecutor();
-			Callable<byte[]> callable = new Callable<byte[]>() {
-				@Override
-				public byte[] call() throws Exception {
-					_sendingRequest = true;
-					
-					while(true){
-						byte[] data = null;
-						do{
-							data = mdr.receive(ProtocolEnum.CHUNK);
-						}while(data == null);
+			try {
+				restoreReceived = executor.submit(callable).get(waitInterval, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				e.printStackTrace();
+				e.getCause();
+			} catch (TimeoutException e) {
+				System.out.println("TIMEOUT");
 
-						String[] message = M_Socket.getMessage(data);
-						if(message == null || message.length != 5) continue;
-
-						// CHUNK
-						if(!message[0].equals("CHUNK")) continue;
-
-						// Version of the chunk received
-						String chunkVersionReceived = message[1];
-						if(!chunkVersionReceived.equals(version)) continue;
-
-						// Id of the CHUNK sender
-						String chunkSenderId = message[2];
-						if(chunkSenderId.equals(thisPeerId)) continue;
-
-						// Id of the chunk file received
-						String chunkFileId = message[3];
-						if(!chunkFileId.equals(fileId)) continue;
-
-						// Num of the chunk file received
-						int numOfChunkReceived = Integer.parseInt(message[4]);
-						if(numOfChunkReceived != chunkNum) continue;
-
-						byte[] chunkData = M_Socket.getChunkData(data);
-						
-						_sendingRequest = false;
-						return chunkData;
-					}
-				}
-			};
-
-			Future<byte[]> future = executor.submit(callable);
-
-			return future.get();
-
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			e.printStackTrace();
+				numOfTries++;
+				waitInterval = waitInterval * 2;
+			}
+			
+			if(restoreReceived != null)
+				restoreComplete = true;
 		}
-
-		return null;
+		
+		return restoreReceived;
 	}
 
 	public boolean restoreFile(String fileName, String version){

@@ -86,6 +86,8 @@ public class Deletion_Protocol extends Protocol {
 		
 		if(!chunkExists) return false;
 		
+		fm.writeStoreChunkReplicationRegisters(chunksStored);
+		
 		String headMessageToSendStr = _HEAD + " " + version + " " + thisPeerId + " " + fileId + " " + _CRLF + _CRLF;
 		byte[] messageToSend = headMessageToSendStr.getBytes();
 		mc.send(messageToSend);
