@@ -85,6 +85,7 @@ public class Reclaim_Protocol extends Protocol {
 			
 			fm.deleteInstance(chunkFile);
 			chunksStored.remove(entry.getKey());
+			fm.writeStoreChunkReplicationRegisters(chunksStored);
 			
 			sendRemovedChunk(entry.getKey().getId(), entry.getKey().getVersion(), entry.getKey().getChunkNum());
 			
