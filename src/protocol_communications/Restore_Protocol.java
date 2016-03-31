@@ -44,9 +44,9 @@ public class Restore_Protocol extends Protocol {
 					if(message == null || message.length != 5) continue;
 
 					// GETCHUNK
-					if(!message[0].equals("GETCHUNK")) continue;
+					if(!message[0].equals(_HEAD)) continue;
 
-					// Version of the getchunk received
+					// Version of the GETCHUNK received
 					String getChunkVersionReceived = message[1];
 
 					// Id of the GETCHUNK sender
@@ -78,7 +78,7 @@ public class Restore_Protocol extends Protocol {
 						if(messageReceivedMDR == null || messageReceivedMDR.length != 5) continue;
 
 						// CHUNK
-						if(!messageReceivedMDR[0].equals("CHUNK")) continue;
+						if(!messageReceivedMDR[0].equals(_REPLY_HEAD)) continue;
 
 						// Version of the chunk received
 						String chunkVersionReceivedMDR = messageReceivedMDR[1];
@@ -147,7 +147,7 @@ public class Restore_Protocol extends Protocol {
 					if(message == null || message.length != 5) continue;
 
 					// CHUNK
-					if(!message[0].equals("CHUNK")) continue;
+					if(!message[0].equals(_REPLY_HEAD)) continue;
 
 					// Version of the chunk received
 					String chunkVersionReceived = message[1];
@@ -187,8 +187,6 @@ public class Restore_Protocol extends Protocol {
 				e.printStackTrace();
 				e.getCause();
 			} catch (TimeoutException e) {
-				System.out.println("TIMEOUT");
-
 				numOfTries++;
 				waitInterval = waitInterval * 2;
 			}

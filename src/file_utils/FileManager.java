@@ -193,19 +193,19 @@ public class FileManager {
 		return result;
 	}
 
-	private void deleteDir(File folder){
-		File[] files = folder.listFiles();
+	public void deleteInstance(File instance){
+		File[] files = instance.listFiles();
 
 		if(files != null){
 			for(File file : files){
 				if(file.isDirectory())
-					deleteDir(file);
+					deleteInstance(file);
 				else
 					file.delete();
 			}
 		}
 
-		folder.delete();
+		instance.delete();
 	}
 
 	private long folderSize(File folder){
@@ -224,7 +224,7 @@ public class FileManager {
 		File chunkFolder = new File(filesDir);
 		
 		long dirSize = folderSize(chunkFolder);
-		deleteDir(chunkFolder);
+		deleteInstance(chunkFolder);
 		return dirSize;
 	}
 

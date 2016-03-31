@@ -85,7 +85,7 @@ public class Peer {
 		
 		bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb, peerID);
 		dp = new Deletion_Protocol(fm, fileNames, chunkStored, mc, peerID);
-		rp = new Reclaim_Protocol(fm, fileNames, chunkStored, mc, peerID);
+		rp = new Reclaim_Protocol(fm, fileNames, chunkStored, mc, peerID, bp);
 		tp = new Restore_Protocol(fm, fileNames, chunkStored, mc, mdr, peerID);
 		
 		peerLogic.start();

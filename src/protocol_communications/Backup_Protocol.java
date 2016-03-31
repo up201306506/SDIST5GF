@@ -45,7 +45,7 @@ public class Backup_Protocol extends Protocol {
 					if(message == null || message.length != 6) continue;
 
 					// PUTCHUNK
-					if(!message[0].equals("PUTCHUNK")) continue;
+					if(!message[0].equals(_HEAD)) continue;
 
 					// Version of the chunk received
 					String chunkVersionReceived = message[1];
@@ -140,7 +140,7 @@ public class Backup_Protocol extends Protocol {
 				}
 			}
 		});
-
+		
 		receiveChunkThread.start();
 		receiveStoredThread.start();
 	}
