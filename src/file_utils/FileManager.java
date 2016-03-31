@@ -204,7 +204,8 @@ public class FileManager {
 					file.delete();
 			}
 		}
-
+		
+		if(instance.getParentFile().listFiles().length == 0) deleteFolder(instance.getParentFile().getName());
 		instance.delete();
 	}
 

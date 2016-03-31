@@ -81,7 +81,10 @@ public class Reclaim_Protocol extends Protocol {
 										entry.getKey().getId() + "-" + String.format("%06d", entry.getKey().getChunkNum()));
 			
 			fm.setFreeDiskSpace(fm.getFreeDiskSpace() + chunkFile.length());
+			bytesToReclaim -= chunkFile.length();
+			
 			fm.deleteInstance(chunkFile);
+			chunksStored.remove(entry.getKey());
 			
 			sendRemovedChunk(entry.getKey().getId(), entry.getKey().getVersion(), entry.getKey().getChunkNum());
 			
