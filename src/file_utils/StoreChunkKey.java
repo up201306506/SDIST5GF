@@ -23,6 +23,10 @@ public class StoreChunkKey {
 		return fileId;
 	}
 	
+	public int getChunkNum(){
+		return chunkNum;
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if(!(obj instanceof StoreChunkKey)){

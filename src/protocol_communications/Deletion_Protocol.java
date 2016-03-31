@@ -29,12 +29,12 @@ public class Deletion_Protocol extends Protocol {
 					if(message == null || message.length != 4) continue;
 
 					// DELETE
-					if(!message[0].equals("DELETE")) continue;
+					if(!message[0].equals(_HEAD)) continue;
 
 					// Version of the chunk received
 					String chunkVersionReceived = message[1];
 
-					// Id of the PUTCHUNK sender
+					// Id of the DELETE sender
 					String deleteSenderId = message[2];
 					if(deleteSenderId.equals(thisPeerId)) continue;
 
