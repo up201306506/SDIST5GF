@@ -306,13 +306,9 @@ public class Peer {
 					// * RECLAIM
 					//---------------------------
 					
-					boolean reclaim_success = false;
-					/* LOGIC FOR RECLAIMING*/
-						// fileArgs[1] - Restore Amount.
-						reclaim_success = true; //dummy
-					/* LOGIC FOR RECLAIMING*/
-						
-					if (reclaim_success)
+					long bytesToReclaim = Long.parseLong(fileArgs[1]);
+					
+					if (rp.reclaimSpace(bytesToReclaim) != -1)
 						clientWriter.println("RECLAIM OK");
 					else
 						clientWriter.println("RECLAIM FAIL");
