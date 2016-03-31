@@ -74,12 +74,16 @@ public class Peer {
 		}  
 		catch(NumberFormatException nfe)  
 		{  
-			System.out.println("PeerID should be a vvalid TCP port number");
+			System.out.println("Call Error: Invalid PeerId");
+			System.out.println("----------------------------");
+			System.out.println("PeerID should be a valid TCP port number");
 			System.exit(-1);
 		}  
 
 		if(tcpPort <= 0 || tcpPort > 65536)
 		{  
+			System.out.println("Call Error: Invalid PeerId");
+			System.out.println("----------------------------");
 			System.out.println("PeerID must be withing the valid [1,65536] range for TCP ports");
 			System.exit(-1);
 		}
