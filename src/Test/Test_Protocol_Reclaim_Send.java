@@ -30,7 +30,7 @@ public class Test_Protocol_Reclaim_Send {
 
 		System.out.println("Reclaiming disk space");
 		
-		rp.reclaimSpace(spaceToReclaim);
+		System.out.println(rp.reclaimSpace(spaceToReclaim));
 		
 		System.out.println("Reclaimed " + spaceToReclaim + " bytes");
 
