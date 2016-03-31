@@ -69,16 +69,20 @@ public class Reclaim_Protocol extends Protocol {
 		receiveRemovedThread.start();
 	}
 	
-	public boolean reclaimSpace(long bytesToReclaim){
-		while(fm.getFreeDiskSpace() < Peer.maxDiskSpace || bytesToReclaim > 0){
+	public long reclaimSpace(long bytesToReclaim){
+		long result = 0;
+		long tempBytes = bytesToReclaim;
+		while(fm.getFreeDiskSpace() < Peer.maxDiskSpace && tempBytes > 0){
 			Iterator<Entry<StoreChunkKey, ReplicationValue>> it = chunksStored.entrySet().iterator();
 			
-			if(!it.hasNext()) return false;
+			if(!it.hasNext()) return -1;
 			
 			Entry<StoreChunkKey, ReplicationValue> entry = it.next();
 			
 			File chunkFile = new File(fm.storeFolder(entry.getKey().getId()) + File.separator +
 										entry.getKey().getId() + "-" + String.format("%06d", entry.getKey().getChunkNum()));
+			
+			result += chunkFile.length();
 			
 			fm.setFreeDiskSpace(fm.getFreeDiskSpace() + chunkFile.length());
 			bytesToReclaim -= chunkFile.length();
@@ -92,7 +96,7 @@ public class Reclaim_Protocol extends Protocol {
 			it.remove();
 		}
 		
-		return true;
+		return result;
 	}
 
 	// Sending Data
