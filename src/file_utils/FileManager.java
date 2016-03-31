@@ -204,10 +204,12 @@ public class FileManager {
 					file.delete();
 			}
 		}
-		File parentInstance = new File(instance.getAbsoluteFile().getParentFile().getName());
-		if(folderSize(parentInstance) == 0) deleteInstance(parentInstance);
+		
+		File parentFolder = new File(_STORAGE + File.separator + instance.getParentFile().getName());
 		
 		instance.delete();
+		
+		if(folderSize(parentFolder) == 0) parentFolder.delete();
 	}
 
 	private long folderSize(File folder){

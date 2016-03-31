@@ -12,7 +12,7 @@ public class Test_Protocol_Backup_Send {
 	
 	public static void main(String[] args) {
 		
-		String thisPeerId = "este_pc";
+		String thisPeerId = "pc1";
 		
 		FileManager fm = new FileManager(thisPeerId);
 		
@@ -24,7 +24,7 @@ public class Test_Protocol_Backup_Send {
 		
 		Backup_Protocol bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb, thisPeerId);
 		
-		bp.backupFile("ImagesToSend/a.png", "1.0", 1);
+		bp.backupFile("ImagesToSend/ppg.png", "1.0", 1);
 		
 		fm.writeFileIdToNameRegisters(fileNames);
 		fm.writeStoreChunkReplicationRegisters(chunkStored);

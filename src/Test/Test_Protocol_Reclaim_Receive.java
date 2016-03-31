@@ -15,7 +15,7 @@ public class Test_Protocol_Reclaim_Receive {
 
 	public static void main(String[] args) {
 
-		String thisPeerId = "este_pc";
+		String thisPeerId = "pc1";
 
 		FileManager fm = new FileManager(thisPeerId);
 

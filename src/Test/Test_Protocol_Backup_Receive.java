@@ -13,7 +13,7 @@ public class Test_Protocol_Backup_Receive {
 	
 	public static void main(String[] args) {
 		
-		String thisPeerId = "este_pc";
+		String thisPeerId = "pc2";
 		
 		FileManager fm = new FileManager(thisPeerId);
 		

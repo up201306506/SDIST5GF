@@ -85,7 +85,7 @@ public class Reclaim_Protocol extends Protocol {
 			result += chunkFile.length();
 			
 			fm.setFreeDiskSpace(fm.getFreeDiskSpace() + chunkFile.length());
-			bytesToReclaim -= chunkFile.length();
+			tempBytes -= chunkFile.length();
 			
 			fm.deleteInstance(chunkFile);
 			chunksStored.remove(entry.getKey());
