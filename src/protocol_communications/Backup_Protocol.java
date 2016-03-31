@@ -221,7 +221,7 @@ public class Backup_Protocol extends Protocol {
 			fileId = hexString.toString();
 
 			for(int i = 0; i < data.size(); i++){
-				System.out.println("Chunk: " + i + "\tSize: " + data.get(i).length);
+				System.out.println("[BACKUP] Chunk: " + i + "\tSize: " + data.get(i).length);
 				if(!sendPutChunck(version, thisPeerId, fileId, i, replicationDegree, data.get(i))) return false;
 			}
 
@@ -229,7 +229,7 @@ public class Backup_Protocol extends Protocol {
 			e.printStackTrace();
 		}
 
-		System.out.println("Backed up file");
+		System.out.println("[BACKUP] Backed up file");
 
 		if(fileId != null && fileName != null)
 			if(!fileIdToFileName.containsKey(fileId)){
