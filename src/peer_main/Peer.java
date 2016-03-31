@@ -48,17 +48,16 @@ public class Peer {
 		//-------------------------
 		// Checking Arguments
 		//-------------------------
-		if(args.length != 5)
+		if(args.length != 4)
 		{
 			/*
-			 * Example Args: UniqueID 50123 224.224.224.224:15000 224.224.224.225:15001 224.225.226.232:12345
+			 * Example Args: 50123 224.224.224.224:15000 224.224.224.225:15001 224.225.226.232:12345
 			 */
 			
 			System.out.println("Call Error: Wrong number of arguments");
 			System.out.println("----------------------------");
-			System.out.println("Usage: java Peer <PeerID> <TCPport> <mcIP>:<mcPORT> <mdbIP>:<mdbPORT> <mdrIP>:<mdrPORT>");
-			System.out.println("<TCPport> - Port on which the TestApp should connect to (leave as 0 for random ports)");
-			System.out.println("<PeerID> - name by which this ID is recognized, should be unique");
+			System.out.println("Usage: java Peer <PeerID> <mcIP>:<mcPORT> <mdbIP>:<mdbPORT> <mdrIP>:<mdrPORT>");
+			System.out.println("<PeerID> - Unique identifier for this Peer, which is also the port on which the TestApp should connect to");
 			System.out.println("<IP>:<PORT> - Multicast channel addresses for MC, MDB and MDR");
 			System.exit(1);
 		}
@@ -68,12 +67,26 @@ public class Peer {
 		//-------------------------
 		
 		peerID = args[0];
-		
-		tcpPort = Integer.parseInt(args[1]);
-		
-		String[] MCArgs = args[2].split(":");
-		String[] MDBArgs = args[3].split(":");
-		String[] MDRArgs = args[4].split(":");
+
+		try  
+		{  
+			tcpPort = Integer.parseInt(args[0]); 
+		}  
+		catch(NumberFormatException nfe)  
+		{  
+			System.out.println("PeerID should be a vvalid TCP port number");
+			System.exit(-1);
+		}  
+
+		if(tcpPort <= 0 || tcpPort > 65536)
+		{  
+			System.out.println("PeerID must be withing the valid [1,65536] range for TCP ports");
+			System.exit(-1);
+		}
+			 
+		String[] MCArgs = args[1].split(":");
+		String[] MDBArgs = args[2].split(":");
+		String[] MDRArgs = args[3].split(":");
 		mc = new M_Socket(MCArgs[0], Integer.parseInt(MCArgs[1]));
 		mdb = new M_Socket(MDBArgs[0], Integer.parseInt(MDBArgs[1]));
 		mdr = new M_Socket(MDRArgs[0], Integer.parseInt(MDRArgs[1]));
