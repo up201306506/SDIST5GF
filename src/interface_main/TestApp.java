@@ -51,6 +51,11 @@ public class TestApp {
 				System.exit(1);
 			}
 		}
+		else if(args[1].equals("BACKUP") && args.length != 4)
+		{
+			System.err.println("<SubProt> BACKUP must have a File Path and a Replication Degree");
+			System.exit(1);
+		}
 		
 		String[] peerAddressArgs = args[0].split(":");
 		if (peerAddressArgs.length == 2)

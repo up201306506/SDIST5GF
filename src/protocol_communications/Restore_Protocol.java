@@ -166,6 +166,7 @@ public class Restore_Protocol extends Protocol {
 					if(numOfChunkReceived != chunkNum) continue;
 
 					byte[] chunkData = M_Socket.getChunkData(data);
+					System.out.println("[CHUNK] " + chunkData.length);
 					
 					_sendingRequest = false;
 					return chunkData;

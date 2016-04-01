@@ -87,6 +87,7 @@ public class Backup_Protocol extends Protocol {
 					int chunkReplicationDegree = Integer.parseInt(message[5]);
 
 					byte[] chunkData = M_Socket.getChunkData(data);
+					System.out.println("[PUTCHUNK] " + chunkData.length);
 					if(fm.getFreeDiskSpace() < chunkData.length) continue;
 
 					// Register the new received chunk

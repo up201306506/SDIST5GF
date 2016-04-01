@@ -165,7 +165,7 @@ public class M_Socket {
 		
 		byte[] result = new byte[data.length - bodyIndex];
 		
-		System.out.println(result.length);
+		//System.out.println(result.length);
 		System.arraycopy(data, bodyIndex, result, 0, result.length);
 		return result;
 	}
