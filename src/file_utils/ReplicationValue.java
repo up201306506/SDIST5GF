@@ -21,6 +21,10 @@ public class ReplicationValue {
 		if(replicationValue > 0) replicationValue--;
 	}
 	
+	public int getReplicationDegree(){
+		return replicationDegree;
+	}
+	
 	@Override
 	public String toString() {
 		String eol = System.getProperty("line.separator");

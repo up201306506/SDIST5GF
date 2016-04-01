@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import file_utils.StoreChunkKey;
 import file_utils.FileManager;
 import file_utils.ProtocolEnum;
+import file_utils.RandomDelay;
 import file_utils.ReplicationValue;
 import network_communications.M_Socket;
 import peer_main.Peer;
@@ -59,6 +60,20 @@ public class Reclaim_Protocol extends Protocol {
 						if(entry.getKey().equals(new StoreChunkKey(chunkFileId, chunkVersionReceived, chunkNumReceived))){
 							entry.getValue().decrementReplicationValue();
 							fm.writeStoreChunkReplicationRegisters(chunksStored);
+							
+							if(!entry.getValue().replicationValueAboveOrEqualToDegree() && !fileIdToFileName.containsKey(entry.getKey().getId())){
+								try {
+									Thread.sleep(RandomDelay.randomInt(0, 400));
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+								
+								reclaimBP.sendPutChunck("1.0", thisPeerId,
+										entry.getKey().getId(), entry.getKey().getChunkNum(),
+										entry.getValue().getReplicationDegree(),
+										fm.readChunkData("1.0", entry.getKey().getId(), entry.getKey().getChunkNum()));
+							}
+							
 							continue;
 						}
 					}

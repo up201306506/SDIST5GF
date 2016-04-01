@@ -1,5 +1,6 @@
 package Test;
 
+import java.io.IOException;
 import java.util.Map;
 
 import file_utils.FileManager;
@@ -14,7 +15,7 @@ public class Test_Protocol_Reclaim_Send {
 	public static void main(String[] args) {
 		
 		String thisPeerId = "pc2";
-		long spaceToReclaim = 15000; // bytes
+		long spaceToReclaim = 10000; // bytes
 
 		FileManager fm = new FileManager(thisPeerId);
 
@@ -32,6 +33,16 @@ public class Test_Protocol_Reclaim_Send {
 		System.out.println(rp.reclaimSpace(spaceToReclaim));
 		
 		System.out.println("Reclaimed " + spaceToReclaim + " bytes");
+		
+		System.out.println("< press any key to stop executing >");
+
+		try {
+			System.in.read();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		System.out.println("Stopping!");
 
 		System.exit(0);
 	}

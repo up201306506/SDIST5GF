@@ -36,6 +36,7 @@ public class Backup_Protocol extends Protocol {
 		receiveChunkThread = new Thread(new Runnable() {
 			public void run() {	
 				while(true){
+
 					byte[] data = null;
 					do{
 						data = mdb.receive(ProtocolEnum.BACKUP);
@@ -56,6 +57,7 @@ public class Backup_Protocol extends Protocol {
 
 					// Id of the chunk file to store
 					String chunkFileId = message[3];
+					if(fileIdToFileName.containsKey(chunkFileId)) continue;
 
 					// Num of the chunk file to store
 					int numOfChunkToStore = Integer.parseInt(message[4]);
@@ -83,12 +85,17 @@ public class Backup_Protocol extends Protocol {
 
 					// Replication degree of the chunk to store
 					int chunkReplicationDegree = Integer.parseInt(message[5]);
-					
+
 					byte[] chunkData = M_Socket.getChunkData(data);
 					if(fm.getFreeDiskSpace() < chunkData.length) continue;
 
 					// Register the new received chunk
-					chunksStored.put(new StoreChunkKey(chunkFileId, chunkVersionReceived, numOfChunkToStore), new ReplicationValue(chunkReplicationDegree, 1));
+					if(chunksStored.containsKey(new StoreChunkKey(chunkFileId, chunkVersionReceived, numOfChunkToStore)))
+						chunksStored.get(new StoreChunkKey(chunkFileId, chunkVersionReceived, numOfChunkToStore)).incrementReplicationValue();
+					else
+						chunksStored.put(new StoreChunkKey(chunkFileId, chunkVersionReceived, numOfChunkToStore), new ReplicationValue(chunkReplicationDegree, 1));
+
+					fm.writeStoreChunkReplicationRegisters(chunksStored);
 
 					fm.writeInStoreFolderFile(chunkFileId, numOfChunkToStore, chunkData);
 					fm.setFreeDiskSpace(fm.getFreeDiskSpace() - chunkData.length);
@@ -140,13 +147,13 @@ public class Backup_Protocol extends Protocol {
 				}
 			}
 		});
-		
+
 		receiveChunkThread.start();
 		receiveStoredThread.start();
 	}
 
 	// Sending Data
-	private boolean sendPutChunck(final String version, String senderId, final String fileId, final int chunkNum, int replicationDegree, byte[] chunkData) {
+	public boolean sendPutChunck(final String version, String senderId, final String fileId, final int chunkNum, int replicationDegree, byte[] chunkData) {
 		if(chunkData == null) return false;
 
 		int numOfTries = 1;
@@ -155,6 +162,10 @@ public class Backup_Protocol extends Protocol {
 
 		if(!chunksStored.containsKey(new StoreChunkKey(fileId, version, chunkNum)))
 			chunksStored.put(new StoreChunkKey(fileId, version, chunkNum), new ReplicationValue(replicationDegree, 0));
+		else
+			chunksStored.put(new StoreChunkKey(fileId, version, chunkNum), new ReplicationValue(replicationDegree, 1));
+		
+		fm.writeStoreChunkReplicationRegisters(chunksStored);
 
 		ExecutorService receiveExecutor = Executors.newFixedThreadPool(1);
 		Runnable receiveRunnable = new Runnable() {

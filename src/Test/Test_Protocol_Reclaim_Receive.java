@@ -8,7 +8,6 @@ import file_utils.ReplicationValue;
 import file_utils.StoreChunkKey;
 import network_communications.M_Socket;
 import protocol_communications.Backup_Protocol;
-import protocol_communications.Deletion_Protocol;
 import protocol_communications.Reclaim_Protocol;
 
 public class Test_Protocol_Reclaim_Receive {
