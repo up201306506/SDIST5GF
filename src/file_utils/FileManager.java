@@ -270,8 +270,9 @@ public class FileManager {
 		}
 
 		Map<String, String> fIdToName = new ConcurrentHashMap<String, String>();
+		BufferedReader bReader = null;
 		try {
-			BufferedReader bReader = new BufferedReader(new FileReader(_FID_TO_NAME));
+			bReader = new BufferedReader(new FileReader(_FID_TO_NAME));
 
 			String line = bReader.readLine();
 			while(line != null && !line.equals("")){
@@ -285,12 +286,17 @@ public class FileManager {
 				line = bReader.readLine();
 			}
 
-			bReader.close();
-
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally
+		{
+			try {
+				bReader.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
 		return fIdToName;
@@ -329,8 +335,9 @@ public class FileManager {
 		}
 
 		Map<StoreChunkKey, ReplicationValue> storeChunkReplicationRegisters = new ConcurrentHashMap<StoreChunkKey, ReplicationValue>();
+		BufferedReader bReader = null;
 		try {
-			BufferedReader bReader = new BufferedReader(new FileReader(_STORECHUNK_REPLICATION));
+			bReader = new BufferedReader(new FileReader(_STORECHUNK_REPLICATION));
 
 			String line = bReader.readLine();
 			while(line != null && !line.equals("")){
@@ -347,12 +354,17 @@ public class FileManager {
 				line = bReader.readLine();
 			}
 
-			bReader.close();
-
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally
+		{
+			try {
+				bReader.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
 		return storeChunkReplicationRegisters;
