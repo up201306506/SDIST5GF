@@ -12,7 +12,7 @@ public class Test_Protocol_Restore_Send {
 
 	public static void main(String[] args) {
 		
-		String thisPeerId = "este_pc";
+		String thisPeerId = "pc1";
 
 		FileManager fm = new FileManager(thisPeerId);
 
@@ -27,7 +27,7 @@ public class Test_Protocol_Restore_Send {
 		System.out.println("Sent GetChunk");
 
 		// param -> string filename (not path), string version
-		if(!rp.restoreFile("fileName", "1.0"))
+		if(!rp.restoreFile("ppg.png", "1.0"))
 			System.out.println("Could not restore file");
 
 		System.exit(0);

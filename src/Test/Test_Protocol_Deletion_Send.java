@@ -12,7 +12,7 @@ public class Test_Protocol_Deletion_Send {
 	
 	public static void main(String[] args) {
 		
-		String thisPeerId = "este_pc";
+		String thisPeerId = "pc1";
 
 		FileManager fm = new FileManager(thisPeerId);
 
@@ -25,7 +25,7 @@ public class Test_Protocol_Deletion_Send {
 
 		System.out.println("Deleting chunks backup");
 		
-		dp.sendDeletionChunk("nomeFicheiro", "1.0");
+		dp.sendDeletionChunk("ppg.png", "1.0");
 
 		System.exit(0);
 	}

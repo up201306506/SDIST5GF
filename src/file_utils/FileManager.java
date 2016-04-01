@@ -198,6 +198,8 @@ public class FileManager {
 
 		if(files != null){
 			for(File file : files){
+				if(file == null)
+					continue;
 				if(file.isDirectory())
 					deleteInstance(file);
 				else
@@ -215,6 +217,8 @@ public class FileManager {
 	private long folderSize(File folder){
 		long length = 0;
 		for(File file : folder.listFiles()){
+			if(file == null)
+				continue;
 			if(file.isFile())
 				length += file.length();
 			else
