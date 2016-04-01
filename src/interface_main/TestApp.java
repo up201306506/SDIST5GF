@@ -116,19 +116,18 @@ public class TestApp {
 		
 		
 		//-------------------------
-		// Check if File Exists (BACKUP/RESTORE/DELETE)
-		// Wait for response
+		// Send the File Path (BACKUP/RESTORE/DELETE)
 		//-------------------------
 		if(requiresFile)
 		{		
 			if (!sendMessageWaitResponse("FILE " + args[2], "FILE OK", peerRead, peerWrite))
 			{
-				System.err.println("Peer does not have the file you were looking for");
+				System.err.println("Peer sent an error message");
 				try {echoSocket.close();} 
 					catch (IOException e) {e.printStackTrace();}
 				System.exit(-1);
 			}
-			System.out.println("Target file was found.");
+			System.out.println("Target file path was sent.");
 		}
 		
 		//-------------------------

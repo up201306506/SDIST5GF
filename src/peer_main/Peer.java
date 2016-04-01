@@ -200,7 +200,6 @@ public class Peer {
 				//-------------------------
 				boolean skipToReclaim = false;
 				String filepath = null;
-				boolean fileexists = false;
 				String[] fileArgs = null;		
 				try {
 					String buffer;
@@ -216,24 +215,10 @@ public class Peer {
 								break;
 							}
 
-							//Check if it exists in the Peer directory
 							filepath = fileArgs[1];
-							File tempexists = new File(filepath);
-							fileexists = tempexists.exists();
-							
-							if (fileexists)
-								clientWriter.println("FILE OK");
-							else
-								clientWriter.println("FILE NOT FOUND");
+							clientWriter.println("FILE OK");
 							break;
 						}
-					}
-					if(!fileexists && !skipToReclaim)
-					{
-						System.out.println("Filepath: " + filepath);
-						System.out.println("The client asked for a a file this peer doesn't recognize, reseting...");
-						bail();
-						continue; //Resets main loop
 					}
 				} catch (IOException e) {
 					System.err.println("Error during FILE protocol");
@@ -280,6 +265,17 @@ public class Peer {
 						//---------------------------
 						// * BACKUP
 						//---------------------------
+						
+						//Check if it exists in the Peer directory
+						File tempexists = new File(filepath);
+						if (!tempexists.exists())
+						{
+							System.out.println("Filepath: " + filepath);
+							System.out.println("The client asked for a a file this peer doesn't recognize, reseting...");
+							clientWriter.println("BACKUP NOFILE");
+							bail();
+							continue; //Resets main loop
+						}
 						
 						if (bp.backupFile(filepath, "1.0", replicationDegree))
 							clientWriter.println("BACKUP OK");
