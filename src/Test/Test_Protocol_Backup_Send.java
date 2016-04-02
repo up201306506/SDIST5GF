@@ -13,7 +13,7 @@ public class Test_Protocol_Backup_Send {
 
 	public static void main(String[] args) {
 
-		String thisPeerId = "pc1";
+		String thisPeerId = "estePc";
 
 		FileManager fm = new FileManager(thisPeerId);
 
@@ -25,7 +25,7 @@ public class Test_Protocol_Backup_Send {
 
 		Backup_Protocol bp = new Backup_Protocol(fm, fileNames, chunkStored, mc, mdb, thisPeerId);
 
-		bp.backupFile("ImagesToSend/ppg.png", "1.0", 2);
+		bp.backupFile("ImagesToSend/nomeDoFicheiro", "1.0", 1);
 
 		System.out.println("< press any key to stop executing >");
 
