@@ -13,7 +13,7 @@ public class Test_Protocol_Restore_Receive {
 
 	public static void main(String[] args) {
 		
-		String thisPeerId = "pc2";
+		String thisPeerId = "estePc";
 
 		FileManager fm = new FileManager(thisPeerId);
 

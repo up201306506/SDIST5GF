@@ -14,7 +14,7 @@ public class Test_Protocol_Reclaim_Send {
 
 	public static void main(String[] args) {
 		
-		String thisPeerId = "pc2";
+		String thisPeerId = "estePc";
 		long spaceToReclaim = 10000; // bytes
 
 		FileManager fm = new FileManager(thisPeerId);

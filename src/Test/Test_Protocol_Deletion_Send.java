@@ -12,7 +12,7 @@ public class Test_Protocol_Deletion_Send {
 	
 	public static void main(String[] args) {
 		
-		String thisPeerId = "pc1";
+		String thisPeerId = "estePc";
 
 		FileManager fm = new FileManager(thisPeerId);
 

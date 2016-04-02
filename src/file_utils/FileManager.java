@@ -198,8 +198,8 @@ public class FileManager {
 
 		if(files != null){
 			for(File file : files){
-				if(file == null)
-					continue;
+				if(file == null) continue;
+				
 				if(file.isDirectory())
 					deleteInstance(file);
 				else
@@ -211,14 +211,16 @@ public class FileManager {
 		
 		instance.delete();
 		
-		if(folderSize(parentFolder) == 0) parentFolder.delete();
+		if(parentFolder != null && folderSize(parentFolder) == 0) parentFolder.delete();
 	}
 
 	private long folderSize(File folder){
+		if(folder == null || !folder.isDirectory()) return 0;
+		
 		long length = 0;
 		for(File file : folder.listFiles()){
-			if(file == null)
-				continue;
+			if(file == null) continue;
+			
 			if(file.isFile())
 				length += file.length();
 			else
